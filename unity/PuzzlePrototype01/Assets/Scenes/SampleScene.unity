@@ -427,7 +427,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1248682565}
   m_CullTransparentMesh: 1
---- !u!1 &1279815763
+--- !u!1 &1480467390
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -435,37 +435,37 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1279815765}
-  - component: {fileID: 1279815764}
+  - component: {fileID: 1480467392}
+  - component: {fileID: 1480467391}
   m_Layer: 0
-  m_Name: Boot
+  m_Name: GameController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1279815764
+--- !u!114 &1480467391
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1279815763}
+  m_GameObject: {fileID: 1480467390}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 07e5de269f765904b9807a2dd4366601, type: 3}
+  m_Script: {fileID: 11500000, guid: f05b731b22fe6454bae9745d7eda2ba7, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Boot
---- !u!4 &1279815765
+  m_EditorClassIdentifier: Assembly-CSharp::GameController
+--- !u!4 &1480467392
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1279815763}
+  m_GameObject: {fileID: 1480467390}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -40.77592, y: 36.05354, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -578,6 +578,6 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 519420032}
-  - {fileID: 1279815765}
   - {fileID: 1486022963}
   - {fileID: 554419318}
+  - {fileID: 1480467392}
