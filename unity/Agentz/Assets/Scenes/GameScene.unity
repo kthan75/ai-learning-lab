@@ -159,6 +159,17 @@ Camera:
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
+  m_Iso: 200
+  m_ShutterSpeed: 0.005
+  m_Aperture: 16
+  m_FocusDistance: 10
+  m_FocalLength: 50
+  m_BladeCount: 5
+  m_Curvature: {x: 2, y: 11}
+  m_BarrelClipping: 0.25
+  m_Anamorphism: 0
+  m_SensorSize: {x: 36, y: 24}
+  m_LensShift: {x: 0, y: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
@@ -209,6 +220,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 100000006}
+  - component: {fileID: 100000007}
   m_Layer: 0
   m_Name: GameBootstrapper
   m_TagString: Untagged
@@ -231,6 +243,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &100000007
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03eb49df62b3e0f4f8825d27f60b3ff6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameBootstrapper
+  config: {fileID: 11400000, guid: 77b15c9941f7a514eafdbef53f9437d7, type: 2}
+  agents:
+  - {fileID: 11400000, guid: 990f9842483b2ac4f9588d7a4e11eaad, type: 2}
+  - {fileID: 11400000, guid: 2ec8af43728b59848b38288d5dcb3361, type: 2}
+  - {fileID: 11400000, guid: 393307a7a16ab5f46a57e86bf77d0332, type: 2}
+  - {fileID: 11400000, guid: eec9da7a0e2e94e42a7863a1a7311051, type: 2}
+  - {fileID: 11400000, guid: 9c958f27c63679d469bcca777f9ddcda, type: 2}
+  - {fileID: 11400000, guid: 13631b8bf7c85464e83c5b302418a480, type: 2}
+  missionPool: []
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
