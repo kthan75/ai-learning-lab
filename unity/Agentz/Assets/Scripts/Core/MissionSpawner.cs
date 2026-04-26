@@ -23,6 +23,12 @@ public class MissionSpawner : MonoBehaviour
 
     public IReadOnlyList<Mission> ActiveMissions => _active;
 
+    /// <summary>
+    /// When true, all mission timers (expiry + busy) and the spawn timer are frozen.
+    /// Set by GameUI whenever any popup is open.
+    /// </summary>
+    public bool PauseMissions { get; set; }
+
     // ────────────────────────────────────────────────────────────────────────
     private void Awake()
     {
@@ -49,6 +55,8 @@ public class MissionSpawner : MonoBehaviour
     {
         if (GameManager.Instance == null ||
             GameManager.Instance.State != GameManager.GameState.Playing) return;
+
+        if (PauseMissions) return;
 
         // Tick active missions (iterate backwards so removal is safe)
         for (int i = _active.Count - 1; i >= 0; i--)

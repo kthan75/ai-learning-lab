@@ -18,6 +18,9 @@ public class ResultPopup : MonoBehaviour
     private readonly Queue<ResultData> _queue = new Queue<ResultData>();
     private bool _showing;
 
+    public bool IsShowing  => _showing;
+    public bool HasQueued  => _queue.Count > 0 || _showing;
+
     private struct ResultData
     {
         public string MissionTitle;

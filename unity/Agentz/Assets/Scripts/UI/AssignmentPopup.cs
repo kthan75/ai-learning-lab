@@ -154,7 +154,8 @@ public class AssignmentPopup : MonoBehaviour
         var sets = new SkillSet[selectedAgents.Count];
         for (int i = 0; i < selectedAgents.Count; i++)
             sets[i] = selectedAgents[i].skills;
-        var combined = SkillSet.AverageAll(sets);
+        var mode = GameManager.Instance.Config.skillCombineMode;
+        var combined = SkillSet.CombineAll(sets, mode);
         float overlap = SkillSet.ComputeOverlap(combined, _mission.Template.requiredSkills);
         int pct = Mathf.RoundToInt(overlap * 100f);
 

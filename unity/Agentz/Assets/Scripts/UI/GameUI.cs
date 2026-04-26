@@ -23,6 +23,7 @@ public class GameUI : MonoBehaviour
 
     private Transform        _canvasRoot;
     private bool             _popupOpen;
+    private bool             _resultOpen;
 
     // ── Layout constants ─────────────────────────────────────────────────────
     const float CardW = 430f, CardH = 195f, CardGapX = 20f, CardGapY = 16f;
@@ -114,13 +115,14 @@ public class GameUI : MonoBehaviour
         _assignPopup = apGo.AddComponent<AssignmentPopup>();
         _assignPopup.Build(_canvasRoot);
         _assignPopup.OnAssigned  += OnAssigned;
-        _assignPopup.OnCancelled += () => _popupOpen = false;
+        _assignPopup.OnCancelled += () => { _popupOpen = false; RefreshPause(); };
 
         // Result popup
         var rpGo = new GameObject("ResultPopup", typeof(RectTransform));
         rpGo.transform.SetParent(_canvasRoot, false);
         _resultPopup = rpGo.AddComponent<ResultPopup>();
         _resultPopup.Build(_canvasRoot);
+        _resultPopup.OnDismissed += () => { _resultOpen = (_resultPopup.HasQueued); RefreshPause(); };
 
         // Round over panel
         var roGo = new GameObject("RoundOverPanel", typeof(RectTransform));
@@ -180,6 +182,8 @@ public class GameUI : MonoBehaviour
 
     private void OnMissionResolved(Mission m, bool success, float overlap, int roll)
     {
+        _resultOpen = true;
+        RefreshPause();
         _resultPopup.Enqueue(m, success, overlap, roll);
         _roster.RefreshAll();
 
@@ -190,7 +194,13 @@ public class GameUI : MonoBehaviour
         }
     }
 
-    // ── Interaction handlers ──────────────────────────────────────────────────
+    // ── Pause helper / Interaction handlers ──────────────────────────────────
+    /// <summary>Freeze mission timers whenever any popup is blocking the board.</summary>
+    private void RefreshPause()
+    {
+        MissionSpawner.Instance.PauseMissions = _popupOpen || _resultOpen;
+    }
+
     private void OnMissionCardClicked(Mission m)
     {
         if (_popupOpen) return;
@@ -198,12 +208,14 @@ public class GameUI : MonoBehaviour
         if (GameManager.Instance.State != GameManager.GameState.Playing) return;
 
         _popupOpen = true;
+        RefreshPause();
         _assignPopup.Show(m, Agents);
     }
 
     private void OnAssigned(Mission mission, List<AgentData> agents)
     {
         _popupOpen = false;
+        RefreshPause();
         MissionSpawner.Instance.AssignAgents(mission, agents);
         _roster.RefreshAll();
 

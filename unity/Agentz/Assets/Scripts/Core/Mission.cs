@@ -78,11 +78,12 @@ public class Mission
     // ── Private ──────────────────────────────────────────────────────────────
     private void Resolve()
     {
-        // Average the assigned agents' skills
+        // Combine the assigned agents' skills using the configured mode
         var sets = new SkillSet[AssignedAgents.Count];
         for (int i = 0; i < AssignedAgents.Count; i++)
             sets[i] = AssignedAgents[i].skills;
-        var combined = SkillSet.AverageAll(sets);
+        var mode = GameManager.Instance.Config.skillCombineMode;
+        var combined = SkillSet.CombineAll(sets, mode);
 
         // Scale requirements by difficulty
         var req = Template.requiredSkills;

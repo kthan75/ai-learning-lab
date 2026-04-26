@@ -50,6 +50,7 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
         if (State != GameState.Playing) return;
+        if (MissionSpawner.Instance != null && MissionSpawner.Instance.PauseMissions) return;
 
         RoundTimeRemaining -= Time.deltaTime;
         OnTimerTick?.Invoke(RoundTimeRemaining);

@@ -1,6 +1,17 @@
 using System;
 using UnityEngine;
 
+/// <summary>How multiple agents' skills are combined when assigning to a mission.</summary>
+public enum SkillCombineMode
+{
+    /// <summary>Simple mean across agents — adding a weak agent can hurt.</summary>
+    Average,
+    /// <summary>Sum per axis, capped at 10 — more agents always helps.</summary>
+    Additive,
+    /// <summary>Best value per axis — each agent contributes their strongest skills.</summary>
+    Max
+}
+
 /// <summary>
 /// The five skills shared by both agents and missions.
 /// Values range from 0 to 10.
@@ -65,6 +76,51 @@ public struct SkillSet
         }
         int n = sets.Length;
         return new SkillSet(eng / n, dip / n, nav / n, ss / n, res / n);
+    }
+
+    /// <summary>
+    /// Combines an array of SkillSets using the specified mode.
+    /// </summary>
+    public static SkillSet CombineAll(SkillSet[] sets, SkillCombineMode mode)
+    {
+        if (sets == null || sets.Length == 0) return new SkillSet();
+
+        switch (mode)
+        {
+            case SkillCombineMode.Average:
+                return AverageAll(sets);
+
+            case SkillCombineMode.Additive:
+            {
+                float eng = 0, dip = 0, nav = 0, ss = 0, res = 0;
+                foreach (var s in sets)
+                {
+                    eng += s.engineering;
+                    dip += s.diplomacy;
+                    nav += s.navigation;
+                    ss  += s.streetSmarts;
+                    res += s.resilience;
+                }
+                return new SkillSet(eng, dip, nav, ss, res); // constructor clamps to 10
+            }
+
+            case SkillCombineMode.Max:
+            {
+                float eng = 0, dip = 0, nav = 0, ss = 0, res = 0;
+                foreach (var s in sets)
+                {
+                    eng = Mathf.Max(eng, s.engineering);
+                    dip = Mathf.Max(dip, s.diplomacy);
+                    nav = Mathf.Max(nav, s.navigation);
+                    ss  = Mathf.Max(ss,  s.streetSmarts);
+                    res = Mathf.Max(res, s.resilience);
+                }
+                return new SkillSet(eng, dip, nav, ss, res);
+            }
+
+            default:
+                return AverageAll(sets);
+        }
     }
 
     /// <summary>

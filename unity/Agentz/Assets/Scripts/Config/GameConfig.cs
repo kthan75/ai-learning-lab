@@ -8,6 +8,10 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "GameConfig", menuName = "Agentz/Game Config")]
 public class GameConfig : ScriptableObject
 {
+    [Header("Skill Combination")]
+    [Tooltip("How multiple agents' skills are combined.\n• Average — simple mean (adding a weak agent can lower the score)\n• Additive — sum capped at 10 (more agents always helps)\n• Max — best value per axis (each agent covers their strongest skill)")]
+    public SkillCombineMode skillCombineMode = SkillCombineMode.Average;
+
     [Header("Round")]
     [Tooltip("Duration of each round in seconds.")]
     public float roundDuration = 180f;
