@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
 /// <summary>
@@ -40,11 +41,9 @@ public class GameUI : MonoBehaviour
     private void BuildCanvas()
     {
         // EventSystem (needed for UI clicks)
-        if (FindObjectOfType<EventSystem>() == null)
+        if (FindFirstObjectByType<EventSystem>() == null)
         {
-            var es = new GameObject("EventSystem",
-                                    typeof(EventSystem),
-                                    typeof(StandaloneInputModule));
+            new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
         }
 
         var canvasGo = new GameObject("GameCanvas",

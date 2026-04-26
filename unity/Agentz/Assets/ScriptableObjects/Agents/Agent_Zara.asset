@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd0cb6fc073c9e84b84498121d568f9d, type: 3}
+  m_Name: Agent_Zara
+  m_EditorClassIdentifier: Assembly-CSharp::AgentData
+  agentName: Zara "Sparks" Vex
+  bio: Former station mechanic turned field operative. Can rewire anything in under
+    a minute.
+  portrait: {fileID: 0}
+  skills:
+    engineering: 9
+    diplomacy: 2
+    navigation: 4
+    streetSmarts: 3
+    resilience: 6

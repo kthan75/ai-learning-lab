@@ -55,7 +55,7 @@ public class AssignmentPopup : MonoBehaviour
         _agentBtnBgs    = new Image[6];
         _agentBtnLabels = new Text[6];
 
-        float btnW = 185f, btnH = 54f, gapX = 12f, gapY = 10f;
+        float btnW = 185f, btnH = 54f, gapY = 10f;
         float rowY0 = 55f, rowY1 = rowY0 - btnH - gapY;
         float[] xs = { -190f, 0f, 190f };
 

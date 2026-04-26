@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d2dcfe1018616f4893b965ac732acce, type: 3}
+  m_Name: GameConfig
+  m_EditorClassIdentifier: Assembly-CSharp::GameConfig
+  roundDuration: 180
+  failureLimit: 4
+  missionSpawnIntervalMin: 3
+  missionSpawnIntervalMax: 6
+  maxActiveMissions: 4
+  missionExpiryDuration: 20
+  missionBusyDuration: 7
+  baseGoldReward: 10
+  roundCompletionBonus: 25
+  streakBonusThreshold: 5
+  streakBonusGold: 5
+  skillScalePerRound: 1.05
+  spawnIntervalReductionPerRound: 0.03
+  minSpawnInterval: 1.5
+  skillUpgradeCostBase: 15
+  skillUpgradeCostRamp: 5
