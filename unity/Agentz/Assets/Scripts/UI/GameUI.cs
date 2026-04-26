@@ -233,6 +233,7 @@ public class GameUI : MonoBehaviour
         _roundOver.Hide();
         _missionToSlot.Clear();
         foreach (var s in _slots) s.Clear();
+        foreach (var a in Agents) if (a != null) a.isAvailable = true;
         GameManager.Instance.StartNextRound();
         _roster.RefreshAll();
         var gm2 = GameManager.Instance;
@@ -245,6 +246,7 @@ public class GameUI : MonoBehaviour
         _roundOver.Hide();
         _missionToSlot.Clear();
         foreach (var s in _slots) s.Clear();
+        foreach (var a in Agents) if (a != null) a.isAvailable = true;
         GameManager.Instance.RestartGame();
         _roster.RefreshAll();
         _hud.Refresh(GameManager.Instance.Config.roundDuration,

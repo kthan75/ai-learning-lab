@@ -53,11 +53,42 @@ public class MissionSpawner : MonoBehaviour
 
     private void Update()
     {
-        if (GameManager.Instance == null ||
-            GameManager.Instance.State != GameManager.GameState.Playing) return;
+        if (GameManager.Instance == null) return;
 
+        var state = GameManager.Instance.State;
+        if (state == GameManager.GameState.RoundOver) return;
         if (PauseMissions) return;
 
+        if (state == GameManager.GameState.Draining)
+        {
+            // Silently remove all Waiting missions (no failure penalty — round is over)
+            for (int i = _active.Count - 1; i >= 0; i--)
+            {
+                if (_active[i].State == Mission.MissionState.Waiting)
+                {
+                    OnMissionExpired?.Invoke(_active[i]);
+                    _active.RemoveAt(i);
+                }
+            }
+
+            // Keep ticking Busy missions so agents are properly freed and results fire
+            for (int i = _active.Count - 1; i >= 0; i--)
+            {
+                var m = _active[i];
+                if (m.State == Mission.MissionState.Resolved)
+                    _active.RemoveAt(i);
+                else
+                    m.Tick(Time.deltaTime);
+            }
+
+            // Once all missions are done, end the round
+            if (_active.Count == 0)
+                GameManager.Instance.CompleteRound();
+
+            return;
+        }
+
+        // ── Playing ──────────────────────────────────────────────────────────
         // Tick active missions (iterate backwards so removal is safe)
         for (int i = _active.Count - 1; i >= 0; i--)
         {
@@ -126,7 +157,7 @@ public class MissionSpawner : MonoBehaviour
 
     private MissionTemplate[] BuildDefaultPool()
     {
-        var defs = DefaultMissions.All;
+        var defs = MissionLoader.Load();
         var pool = new MissionTemplate[defs.Length];
         for (int i = 0; i < defs.Length; i++)
         {

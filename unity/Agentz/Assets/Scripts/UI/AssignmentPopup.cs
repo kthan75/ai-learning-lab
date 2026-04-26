@@ -163,7 +163,7 @@ public class AssignmentPopup : MonoBehaviour
         _agentBtns[idx].interactable = avail;
 
         var s = _agents[idx].skills;
-        _agentSkillLabels[idx].text  = $"E:{s.engineering:0} D:{s.diplomacy:0} N:{s.navigation:0} S:{s.streetSmarts:0} R:{s.resilience:0}";
+        _agentSkillLabels[idx].text  = $"ENG:{s.engineering:0} DIP:{s.diplomacy:0} NAV:{s.navigation:0} SSM:{s.streetSmarts:0} RES:{s.resilience:0}";
         _agentSkillLabels[idx].color = avail ? UIHelper.ColSubtext
                                              : new Color(UIHelper.ColSubtext.r, UIHelper.ColSubtext.g,
                                                          UIHelper.ColSubtext.b, 0.4f);

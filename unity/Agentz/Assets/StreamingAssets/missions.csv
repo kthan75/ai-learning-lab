@@ -1,0 +1,31 @@
+Title,Description,ENG,DIP,NAV,SSM,RES,Gold,Tier
+"Reactor Coolant Leak","Pressure is dropping in bay 7. Patch it before the core overheats. [ENG, RES]",7,1,2,2,4,10,1
+"Docking Bay Dispute","Two freighter crews are blocking the airlock and refusing to budge. [DIP, SSM]",1,7,2,4,2,10,1
+"Lost Supply Drone","A cargo drone went dark somewhere in the maintenance corridors. [NAV, ENG]",3,1,7,3,2,10,1
+"Black Market Tip","Intel suggests a smuggling drop in the lower decks. Investigate quietly. [SSM,NAV]",1,3,3,8,1,12,1
+"Brawl in the Cantina","Three Kreth workers and a Vellian merchant need separating — fast. [RES, DIP]",1,4,1,3,8,10,1
+"Malfunctioning Airlock","The outer seal won't cycle. Manual override needed during a docking. [ENG, NAV]",6,1,5,2,3,15,2
+"Ambassador Escort","The Yrev delegation needs an escort through the station's lower ring. [DIP, NAV]",1,6,4,3,3,15,2
+"Smuggler Interrogation","Detained suspect won't talk. Someone fluent in leverage is needed. [SSM,DIP]",1,5,1,7,3,18,2
+"Engine Room Fire","Electrical fault triggered a suppression failure. Get in and fix it. [ENG, RES]",7,1,2,2,6,15,2
+"Navigation Array Offline","Three incoming ships can't dock — the beacon is down. [NAV, ENG]",5,2,7,1,2,15,2
+"Hostage Situation","A disgruntled mechanic has locked down deck 9 with six civilians inside. [RES, DIP]",3,6,2,5,7,25,3
+"Reactor Meltdown Warning","The failsafe triggered a full lockdown. Override it before evacuation. [ENG, RES]",9,1,3,2,6,25,3
+"Intruder in the Core","Unknown agent has bypassed security and is heading for the control hub. [SSM,NAV]",4,2,5,8,5,25,3
+"Trade Summit Breakdown","Three species reps are about to walk. Talks collapse in 10 minutes. [DIP, SSM]",1,9,1,5,3,22,3
+"Hull Breach — Outer Ring","Micro-meteorite punctured an outer panel. EVA repair required. [ENG, RES]",7,1,6,2,7,25,3
+"Oxygen Recycler Fault","Bay 3 recycler is throwing errors. Trace the fault before CO2 levels spike. [ENG, NAV]",6,1,3,1,2,10,1
+"Stowaway Detected","Someone is hiding in the cargo holds. Find them before they cause trouble. [SSM,RES]",1,2,2,7,4,10,1
+"Fuel Line Rupture","A pressurised line burst near docking arm 2. Contain it before it ignites. [ENG, RES]",7,1,1,1,3,12,1
+"Medical Emergency","A dockworker collapsed in the lower ring. Someone needs to stabilise them until the medic arrives. [RES, DIP]",2,3,1,2,7,10,1
+"Missing Passenger","A transit passenger hasn't boarded and their ship leaves in 20 minutes. [NAV, DIP]",1,4,6,2,1,10,1
+"Weapons Cache Discovery","A routine inspection found a hidden arms stash. Someone needs to extract it quietly. [SSM,ENG]",3,2,2,7,4,18,2
+"Quarantine Breach","An unregistered ship docked without clearance. Lock it down before anything spreads. [RES, NAV]",2,3,5,2,6,15,2
+"Power Grid Overload","Surge in sector 4 is cascading. Kill the feed manually before it hits life support. [ENG, SSM]",7,1,3,4,2,15,2
+"Diplomatic Insult","A senior Vellian delegate was publicly insulted by station staff. Smooth it over fast. [DIP, RES]",1,7,2,3,5,15,2
+"Stolen Shuttle","A docked shuttle went dark and is now moving. Track it down and bring it back. [NAV, SSM]",3,1,7,5,2,18,2
+"Station Lockdown","Someone triggered a manual security lockdown from an unknown terminal. Override and locate the source. [SSM,ENG]",6,2,4,7,6,25,3
+"Assassination Plot","Credible threat against a visiting dignitary. Extract them through the station without incident. [SSM,RES]",2,5,4,8,7,28,3
+"Sabotaged Life Support","Primary life support has been deliberately tampered with. Find the fault and fix it — now. [ENG, RES]",8,1,4,3,7,25,3
+"Galactic Council Hearing","The station is under review. A council observer is watching everything. Keep the peace and the image. [DIP, RES]",1,9,3,4,6,22,3
+"Rescue — Sector 7","A distress beacon from an unmapped corridor. Reach it before life signs go dark. [NAV, RES]",5,2,8,3,7,25,3

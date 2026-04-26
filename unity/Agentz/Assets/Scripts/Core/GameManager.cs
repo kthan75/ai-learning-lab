@@ -9,7 +9,7 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
-    public enum GameState { Playing, RoundOver }
+    public enum GameState { Playing, Draining, RoundOver }
 
     // ── Public state ────────────────────────────────────────────────────────
     public GameState  State              { get; private set; }
@@ -62,16 +62,22 @@ public class GameManager : MonoBehaviour
         if (MissionSpawner.Instance != null && MissionSpawner.Instance.PauseMissions) return;
 
         RoundTimeRemaining -= Time.deltaTime;
-        OnTimerTick?.Invoke(RoundTimeRemaining);
 
         if (RoundTimeRemaining <= 0f)
-            EndRound();
+        {
+            RoundTimeRemaining = 0f;
+            State = GameState.Draining; // MissionSpawner drains active missions, then calls CompleteRound()
+            OnTimerTick?.Invoke(0f);
+            return;
+        }
+
+        OnTimerTick?.Invoke(RoundTimeRemaining);
     }
 
     // ── Called by MissionSpawner ────────────────────────────────────────────
     public void RegisterSuccess(int goldReward)
     {
-        if (State != GameState.Playing) return;
+        if (State == GameState.RoundOver) return;
 
         MissionsCompleted++;
         ConsecSuccesses++;
@@ -89,17 +95,21 @@ public class GameManager : MonoBehaviour
 
     public void RegisterFailure()
     {
-        if (State != GameState.Playing) return;
+        if (State == GameState.RoundOver) return;
 
         Failures++;
         ConsecSuccesses = 0;
         OnFailureAdded?.Invoke(Failures);
 
-        if (Failures >= Config.failureLimit)
+        // Only trigger game-over by failure limit while still in normal play
+        if (State == GameState.Playing && Failures >= Config.failureLimit)
             EndRound(failure: true);
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────
+    /// <summary>Called by MissionSpawner once all in-flight missions finish after the timer expires.</summary>
+    public void CompleteRound() => EndRound(failure: false);
+
     private void EndRound(bool failure = false)
     {
         if (State == GameState.RoundOver) return;
