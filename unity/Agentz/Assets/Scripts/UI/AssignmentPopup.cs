@@ -1,0 +1,190 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+/// <summary>
+/// Modal popup for assigning agents to a mission.
+/// Shows mission info, 6 agent toggle-buttons, live success %, and Assign/Cancel.
+/// </summary>
+public class AssignmentPopup : MonoBehaviour
+{
+    public event Action<Mission, List<AgentData>> OnAssigned;
+    public event Action                            OnCancelled;
+
+    private Mission          _mission;
+    private AgentData[]      _agents;
+    private bool[]           _selected;
+    private Button[]         _agentBtns;
+    private Image[]          _agentBtnBgs;
+    private Text[]           _agentBtnLabels;
+    private Text             _lblTitle, _lblDesc, _lblChance;
+    private Button           _btnAssign;
+    private GameObject       _root;
+
+    // ── Build (called once by GameUI) ─────────────────────────────────────────
+    public void Build(Transform canvasRoot)
+    {
+        _root = UIHelper.Panel(canvasRoot, "AssignmentPopup",
+                               UIHelper.BgPopup, Vector2.zero, new Vector2(640, 480));
+        _root.SetActive(false);
+
+        // Bring to front
+        _root.transform.SetAsLastSibling();
+        _root.AddComponent<CanvasGroup>();  // lets us block raycasts
+
+        var t = _root.transform;
+
+        // ── Header ────────────────────────────────────────────────────────────
+        _lblTitle = UIHelper.Label(t, "Mission Title", 24, UIHelper.ColText,
+                                   new Vector2(0, 195), new Vector2(600, 40),
+                                   TextAnchor.UpperCenter, FontStyle.Bold);
+
+        _lblDesc = UIHelper.Label(t, "Description", 16, UIHelper.ColSubtext,
+                                  new Vector2(0, 148), new Vector2(600, 36),
+                                  TextAnchor.UpperCenter);
+
+        // ── Divider ───────────────────────────────────────────────────────────
+        UIHelper.Panel(t, "Div", UIHelper.AccentBlue, new Vector2(0, 120), new Vector2(580, 2));
+
+        // ── Agent buttons (2 rows × 3) ────────────────────────────────────────
+        UIHelper.Label(t, "Select agents (max 3):", 16, UIHelper.ColSubtext,
+                       new Vector2(-220, 100), new Vector2(260, 26));
+
+        _agentBtns      = new Button[6];
+        _agentBtnBgs    = new Image[6];
+        _agentBtnLabels = new Text[6];
+
+        float btnW = 185f, btnH = 54f, gapX = 12f, gapY = 10f;
+        float rowY0 = 55f, rowY1 = rowY0 - btnH - gapY;
+        float[] xs = { -190f, 0f, 190f };
+
+        for (int i = 0; i < 6; i++)
+        {
+            int row = i / 3, col = i % 3;
+            float x = xs[col], y = (row == 0) ? rowY0 : rowY1;
+
+            var btn = UIHelper.Btn(t, "", new Vector2(x, y), new Vector2(btnW, btnH),
+                                   UIHelper.BgCard, 15);
+            _agentBtns[i]      = btn;
+            _agentBtnBgs[i]    = btn.GetComponent<Image>();
+            _agentBtnLabels[i] = btn.GetComponentInChildren<Text>();
+
+            int idx = i; // capture for lambda
+            btn.onClick.AddListener(() => ToggleAgent(idx));
+        }
+
+        // ── Success chance ────────────────────────────────────────────────────
+        UIHelper.Label(t, "Success Chance:", 18, UIHelper.ColSubtext,
+                       new Vector2(-130, -85), new Vector2(200, 30));
+
+        _lblChance = UIHelper.Label(t, "—", 28, UIHelper.ColText,
+                                    new Vector2(110, -85), new Vector2(180, 36),
+                                    TextAnchor.MiddleCenter, FontStyle.Bold);
+
+        // ── Buttons ───────────────────────────────────────────────────────────
+        var btnCancel = UIHelper.Btn(t, "Cancel", new Vector2(-150, -195),
+                                     new Vector2(160, 48), UIHelper.ColDisabled, 18);
+        btnCancel.onClick.AddListener(Cancel);
+
+        _btnAssign = UIHelper.Btn(t, "Assign", new Vector2(150, -195),
+                                  new Vector2(220, 48), UIHelper.AccentBlue, 20);
+        _btnAssign.onClick.AddListener(Confirm);
+    }
+
+    // ── Public API ────────────────────────────────────────────────────────────
+    public void Show(Mission mission, AgentData[] agents)
+    {
+        _mission  = mission;
+        _agents   = agents;
+        _selected = new bool[agents.Length];
+
+        _lblTitle.text = mission.Template.missionTitle;
+        _lblDesc.text  = mission.Template.description;
+
+        for (int i = 0; i < agents.Length; i++)
+            RefreshAgentBtn(i);
+
+        RefreshChance();
+        _root.SetActive(true);
+        _root.transform.SetAsLastSibling();
+    }
+
+    public void Hide() => _root.SetActive(false);
+
+    // ── Private ───────────────────────────────────────────────────────────────
+    private void ToggleAgent(int idx)
+    {
+        if (!_agents[idx].isAvailable) return;
+
+        int selCount = 0;
+        foreach (var b in _selected) if (b) selCount++;
+
+        if (!_selected[idx] && selCount >= 3) return;  // max 3
+
+        _selected[idx] = !_selected[idx];
+        RefreshAgentBtn(idx);
+        RefreshChance();
+    }
+
+    private void RefreshAgentBtn(int idx)
+    {
+        bool avail = _agents[idx].isAvailable;
+        bool sel   = _selected[idx];
+
+        _agentBtnBgs[idx].color    = sel   ? UIHelper.AccentBlue
+                                   : avail ? UIHelper.BgCard
+                                           : UIHelper.ColDisabled;
+        _agentBtnLabels[idx].text  = _agents[idx].agentName;
+        _agentBtnLabels[idx].color = avail ? Color.white : UIHelper.ColSubtext;
+        _agentBtns[idx].interactable = avail;
+    }
+
+    private void RefreshChance()
+    {
+        var selectedAgents = SelectedAgents();
+        if (selectedAgents.Count == 0)
+        {
+            _lblChance.text  = "—";
+            _lblChance.color = UIHelper.ColSubtext;
+            _btnAssign.interactable = false;
+            return;
+        }
+
+        var sets = new SkillSet[selectedAgents.Count];
+        for (int i = 0; i < selectedAgents.Count; i++)
+            sets[i] = selectedAgents[i].skills;
+        var combined = SkillSet.AverageAll(sets);
+        float overlap = SkillSet.ComputeOverlap(combined, _mission.Template.requiredSkills);
+        int pct = Mathf.RoundToInt(overlap * 100f);
+
+        _lblChance.text  = $"{pct}%";
+        _lblChance.color = pct >= 70 ? UIHelper.ColSuccess
+                         : pct >= 40 ? UIHelper.ColWarn
+                         : UIHelper.ColFail;
+
+        _btnAssign.interactable = true;
+    }
+
+    private void Confirm()
+    {
+        var agents = SelectedAgents();
+        if (agents.Count == 0) return;
+        Hide();
+        OnAssigned?.Invoke(_mission, agents);
+    }
+
+    private void Cancel()
+    {
+        Hide();
+        OnCancelled?.Invoke();
+    }
+
+    private List<AgentData> SelectedAgents()
+    {
+        var list = new List<AgentData>();
+        for (int i = 0; i < _agents.Length; i++)
+            if (_selected[i]) list.Add(_agents[i]);
+        return list;
+    }
+}

@@ -1,49 +1,52 @@
 using UnityEngine;
 
 /// <summary>
-/// Entry point for the game scene.
-/// Holds references to the GameConfig and AgentData assets,
-/// and will wire up all game systems in M1.
+/// Scene entry point. Creates and initializes all game systems:
+/// GameManager, MissionSpawner, and GameUI.
 ///
-/// Attach this MonoBehaviour to the "GameBootstrapper" GameObject in GameScene.
-/// Drag the config and agent assets into the inspector slots.
+/// Inspector slots (already wired from M0):
+///   - config      : GameConfig asset
+///   - agents      : 6 AgentData assets
+///   - missionPool : (optional) MissionTemplate assets — built-in pool used if empty
 /// </summary>
 public class GameBootstrapper : MonoBehaviour
 {
     [Header("Configuration")]
     public GameConfig config;
 
-    [Header("Agent Roster (assign 6 AgentData assets)")]
+    [Header("Agent Roster (6 AgentData assets)")]
     public AgentData[] agents = new AgentData[6];
 
-    [Header("Mission Pool (assign MissionTemplate assets)")]
+    [Header("Mission Pool (optional — built-in pool used if empty)")]
     public MissionTemplate[] missionPool;
 
     private void Awake()
     {
-        ValidateSetup();
-        // M1: initialize GameManager, MissionSpawner, UIManager etc. here
-    }
-
-    private void ValidateSetup()
-    {
         if (config == null)
+        {
             Debug.LogError("[GameBootstrapper] GameConfig is not assigned!", this);
+            return;
+        }
 
-        if (agents == null || agents.Length == 0)
-            Debug.LogWarning("[GameBootstrapper] No agents assigned. " +
-                             "Create AgentData assets and assign them.", this);
+        // Reset agent availability
+        foreach (var a in agents)
+            if (a != null) a.isAvailable = true;
 
-        if (missionPool == null || missionPool.Length == 0)
-            Debug.LogWarning("[GameBootstrapper] No mission templates assigned. " +
-                             "Create MissionTemplate assets and assign them.", this);
+        // ── GameManager ──────────────────────────────────────────────────────
+        var gmGo = new GameObject("GameManager");
+        var gm   = gmGo.AddComponent<GameManager>();
+        gm.Initialize(config);
 
-        // Reset agent availability at scene start
-        if (agents != null)
-            foreach (var agent in agents)
-                if (agent != null)
-                    agent.isAvailable = true;
+        // ── MissionSpawner ───────────────────────────────────────────────────
+        var msGo = new GameObject("MissionSpawner");
+        var ms   = msGo.AddComponent<MissionSpawner>();
+        ms.Initialize(config, missionPool);
 
-        Debug.Log("[GameBootstrapper] Setup OK — ready for M1 wiring.");
+        // ── GameUI ────────────────────────────────────────────────────────────
+        var uiGo = new GameObject("GameUI");
+        var ui   = uiGo.AddComponent<GameUI>();
+        ui.Initialize(agents);
+
+        Debug.Log("[GameBootstrapper] M1 systems initialized.");
     }
 }
