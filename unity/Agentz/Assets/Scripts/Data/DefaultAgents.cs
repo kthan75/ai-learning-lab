@@ -24,40 +24,40 @@ public static class DefaultAgents
 
     public static readonly AgentDef[] All = new AgentDef[]
     {
-        // 1. Engineering specialist — best at fixing things, average elsewhere
+        // 1. Engineering specialist
         new AgentDef(
             "Zara 'Sparks' Vex",
             "Former station mechanic turned field operative. Can rewire anything in under a minute.",
-            eng: 9, dip: 2, nav: 4, ss: 3, res: 6),
+            eng: 5, dip: 1, nav: 2, ss: 1, res: 3),
 
-        // 2. Diplomacy specialist — smooths over inter-species incidents
+        // 2. Diplomacy specialist
         new AgentDef(
             "Ambassador Rell'ik",
             "Multi-lingual attaché fluent in 14 dialects. Prefers words over fists.",
-            eng: 2, dip: 9, nav: 3, ss: 5, res: 5),
+            eng: 1, dip: 4, nav: 2, ss: 3, res: 2),
 
-        // 3. Navigation specialist — best pilot and spatial thinker on the roster
+        // 3. Navigation specialist
         new AgentDef(
             "Captain Mira Orvath",
             "Decorated shuttle pilot with an uncanny ability to find routes others miss.",
-            eng: 4, dip: 3, nav: 9, ss: 4, res: 4),
+            eng: 2, dip: 2, nav: 5, ss: 2, res: 2),
 
-        // 4. Street Smarts specialist — thrives in shady situations
+        // 4. Street Smarts specialist
         new AgentDef(
             "'Ghost' Sable",
             "Background unknown. Somehow knows everyone on every level of the station.",
-            eng: 3, dip: 4, nav: 5, ss: 9, res: 3),
+            eng: 1, dip: 2, nav: 3, ss: 5, res: 1),
 
-        // 5. Resilience specialist — tanks failures, keeps going
+        // 5. Resilience specialist
         new AgentDef(
             "Sergeant Brutus Kael",
             "Twenty-year security veteran. Hard to rattle, hard to stop.",
-            eng: 3, dip: 5, nav: 3, ss: 6, res: 9),
+            eng: 2, dip: 2, nav: 1, ss: 3, res: 5),
 
-        // 6. Hybrid (Engineering + Navigation) — technical pilot archetype
+        // 6. Generalist — fills gaps, no standout weakness
         new AgentDef(
             "Renn Duskfall",
             "Ex-military drone technician. Equally comfortable at a console or in the field.",
-            eng: 7, dip: 2, nav: 7, ss: 2, res: 6),
+            eng: 3, dip: 1, nav: 3, ss: 1, res: 3),
     };
 }

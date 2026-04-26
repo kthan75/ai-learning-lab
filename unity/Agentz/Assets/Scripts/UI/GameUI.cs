@@ -129,7 +129,9 @@ public class GameUI : MonoBehaviour
         roGo.transform.SetParent(_canvasRoot, false);
         _roundOver = roGo.AddComponent<RoundOverPanel>();
         _roundOver.Build(_canvasRoot);
-        _roundOver.OnRestart += OnRestart;
+        _roundOver.OnNextRound += OnNextRound;
+        _roundOver.OnRestart   += OnRestart;
+        _roundOver.OnQuit      += () => Application.Quit();
     }
 
     // ── Event wiring ─────────────────────────────────────────────────────────
@@ -138,15 +140,17 @@ public class GameUI : MonoBehaviour
         var gm = GameManager.Instance;
         var ms = MissionSpawner.Instance;
 
-        gm.OnTimerTick    += t => _hud.Refresh(t, gm.Failures, gm.Gold, gm.Score, gm.RoundNumber);
+        gm.OnTimerTick    += t => _hud.Refresh(t, gm.Failures, gm.Gold, gm.TotalGold, gm.Score, gm.TotalScore, gm.RoundNumber);
         gm.OnFailureAdded += _ => _hud.Refresh(gm.RoundTimeRemaining, gm.Failures,
-                                               gm.Gold, gm.Score, gm.RoundNumber);
+                                               gm.Gold, gm.TotalGold, gm.Score, gm.TotalScore, gm.RoundNumber);
         gm.OnGoldChanged  += _ => _hud.Refresh(gm.RoundTimeRemaining, gm.Failures,
-                                               gm.Gold, gm.Score, gm.RoundNumber);
+                                               gm.Gold, gm.TotalGold, gm.Score, gm.TotalScore, gm.RoundNumber);
         gm.OnRoundEnd += () =>
         {
             _assignPopup.Hide();
-            _roundOver.Show(gm.RoundNumber, gm.MissionsCompleted, gm.Gold, gm.Score);
+            _roundOver.Show(gm.RoundNumber, gm.MissionsCompleted,
+                            gm.Gold, gm.TotalGold, gm.Score, gm.TotalScore,
+                            gm.RoundWasFailure);
         };
 
         ms.OnMissionSpawned  += OnMissionSpawned;
@@ -224,6 +228,18 @@ public class GameUI : MonoBehaviour
             slot.SetMission(mission);
     }
 
+    private void OnNextRound()
+    {
+        _roundOver.Hide();
+        _missionToSlot.Clear();
+        foreach (var s in _slots) s.Clear();
+        GameManager.Instance.StartNextRound();
+        _roster.RefreshAll();
+        var gm2 = GameManager.Instance;
+        _hud.Refresh(gm2.Config.roundDuration, 0,
+                     gm2.Gold, gm2.TotalGold, gm2.Score, gm2.TotalScore, gm2.RoundNumber);
+    }
+
     private void OnRestart()
     {
         _roundOver.Hide();
@@ -232,6 +248,6 @@ public class GameUI : MonoBehaviour
         GameManager.Instance.RestartGame();
         _roster.RefreshAll();
         _hud.Refresh(GameManager.Instance.Config.roundDuration,
-                     0, 0, 0, GameManager.Instance.RoundNumber);
+                     0, 0, 0, 0, 0, GameManager.Instance.RoundNumber);
     }
 }

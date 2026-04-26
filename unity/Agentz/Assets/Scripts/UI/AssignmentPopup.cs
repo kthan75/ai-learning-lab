@@ -19,6 +19,7 @@ public class AssignmentPopup : MonoBehaviour
     private Image[]          _agentBtnBgs;
     private Text[]           _agentBtnLabels;
     private Text             _lblTitle, _lblDesc, _lblChance;
+    private Text[]           _agentSkillLabels;
     private Button           _btnAssign;
     private GameObject       _root;
 
@@ -51,11 +52,12 @@ public class AssignmentPopup : MonoBehaviour
         UIHelper.Label(t, "Select agents (max 3):", 16, UIHelper.ColSubtext,
                        new Vector2(-220, 100), new Vector2(260, 26));
 
-        _agentBtns      = new Button[6];
-        _agentBtnBgs    = new Image[6];
-        _agentBtnLabels = new Text[6];
+        _agentBtns        = new Button[6];
+        _agentBtnBgs      = new Image[6];
+        _agentBtnLabels   = new Text[6];
+        _agentSkillLabels = new Text[6];
 
-        float btnW = 185f, btnH = 54f, gapY = 10f;
+        float btnW = 185f, btnH = 65f, gapY = 10f;
         float rowY0 = 55f, rowY1 = rowY0 - btnH - gapY;
         float[] xs = { -190f, 0f, 190f };
 
@@ -65,10 +67,31 @@ public class AssignmentPopup : MonoBehaviour
             float x = xs[col], y = (row == 0) ? rowY0 : rowY1;
 
             var btn = UIHelper.Btn(t, "", new Vector2(x, y), new Vector2(btnW, btnH),
-                                   UIHelper.BgCard, 15);
-            _agentBtns[i]      = btn;
-            _agentBtnBgs[i]    = btn.GetComponent<Image>();
-            _agentBtnLabels[i] = btn.GetComponentInChildren<Text>();
+                                   UIHelper.BgCard, 14);
+            _agentBtns[i]   = btn;
+            _agentBtnBgs[i] = btn.GetComponent<Image>();
+
+            // Name label — upper half of the button
+            var nameLabel = btn.GetComponentInChildren<Text>();
+            var nameRt    = nameLabel.GetComponent<RectTransform>();
+            nameRt.anchorMin = new Vector2(0f, 0.45f);
+            nameRt.anchorMax = new Vector2(1f, 1f);
+            nameRt.offsetMin = nameRt.offsetMax = Vector2.zero;
+            _agentBtnLabels[i] = nameLabel;
+
+            // Skill label — lower half of the button
+            var skillGo = new GameObject("SkillLabel", typeof(RectTransform));
+            skillGo.transform.SetParent(btn.transform, false);
+            var skillRt      = skillGo.GetComponent<RectTransform>();
+            skillRt.anchorMin = new Vector2(0f, 0f);
+            skillRt.anchorMax = new Vector2(1f, 0.45f);
+            skillRt.offsetMin = skillRt.offsetMax = Vector2.zero;
+            var skillText        = skillGo.AddComponent<UnityEngine.UI.Text>();
+            skillText.font       = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            skillText.fontSize   = 13;
+            skillText.color      = UIHelper.ColSubtext;
+            skillText.alignment  = TextAnchor.MiddleCenter;
+            _agentSkillLabels[i] = skillText;
 
             int idx = i; // capture for lambda
             btn.onClick.AddListener(() => ToggleAgent(idx));
@@ -138,6 +161,12 @@ public class AssignmentPopup : MonoBehaviour
         _agentBtnLabels[idx].text  = _agents[idx].agentName;
         _agentBtnLabels[idx].color = avail ? Color.white : UIHelper.ColSubtext;
         _agentBtns[idx].interactable = avail;
+
+        var s = _agents[idx].skills;
+        _agentSkillLabels[idx].text  = $"E:{s.engineering:0} D:{s.diplomacy:0} N:{s.navigation:0} S:{s.streetSmarts:0} R:{s.resilience:0}";
+        _agentSkillLabels[idx].color = avail ? UIHelper.ColSubtext
+                                             : new Color(UIHelper.ColSubtext.r, UIHelper.ColSubtext.g,
+                                                         UIHelper.ColSubtext.b, 0.4f);
     }
 
     private void RefreshChance()

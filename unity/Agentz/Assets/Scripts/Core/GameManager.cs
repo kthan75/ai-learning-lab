@@ -13,10 +13,13 @@ public class GameManager : MonoBehaviour
 
     // ── Public state ────────────────────────────────────────────────────────
     public GameState  State              { get; private set; }
+    public bool       RoundWasFailure    { get; private set; }
     public GameConfig Config             { get; private set; }
     public int        Failures           { get; private set; }
-    public int        Gold               { get; private set; }
-    public int        Score              { get; private set; }
+    public int        Gold               { get; private set; }  // this round
+    public int        TotalGold          { get; private set; }  // all rounds
+    public int        Score              { get; private set; }  // this round
+    public int        TotalScore         { get; private set; }  // all rounds
     public int        RoundNumber        { get; private set; } = 1;
     public int        MissionsCompleted  { get; private set; }
     public float      RoundTimeRemaining { get; private set; }
@@ -47,6 +50,12 @@ public class GameManager : MonoBehaviour
         State              = GameState.Playing;
     }
 
+    /// <summary>Resets per-round state without clearing cross-round totals.</summary>
+    private void InitializeRound()
+    {
+        Initialize(Config);
+    }
+
     private void Update()
     {
         if (State != GameState.Playing) return;
@@ -71,8 +80,10 @@ public class GameManager : MonoBehaviour
         if (ConsecSuccesses >= Config.streakBonusThreshold)
             earned += Config.streakBonusGold;
 
-        Gold  += earned;
-        Score += 10;
+        Gold       += earned;
+        TotalGold  += earned;
+        Score      += 10;
+        TotalScore += 10;
         OnGoldChanged?.Invoke(Gold);
     }
 
@@ -85,28 +96,37 @@ public class GameManager : MonoBehaviour
         OnFailureAdded?.Invoke(Failures);
 
         if (Failures >= Config.failureLimit)
-            EndRound();
+            EndRound(failure: true);
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────
-    private void EndRound()
+    private void EndRound(bool failure = false)
     {
         if (State == GameState.RoundOver) return;
-        State  =  GameState.RoundOver;
-        Score  += RoundNumber * 100;
+        RoundWasFailure = failure;
+        State       = GameState.RoundOver;
+        int bonus   = RoundNumber * 100;
+        Score      += bonus;
+        TotalScore += bonus;
         OnRoundEnd?.Invoke();
     }
 
     public void StartNextRound()
     {
         RoundNumber++;
+        int savedTotalGold  = TotalGold;
+        int savedTotalScore = TotalScore;
         Initialize(Config);
+        TotalGold  = savedTotalGold;
+        TotalScore = savedTotalScore;
         MissionSpawner.Instance?.RestartSpawner(Config);
     }
 
     public void RestartGame()
     {
         RoundNumber = 1;
+        TotalGold   = 0;
+        TotalScore  = 0;
         Initialize(Config);
         MissionSpawner.Instance?.RestartSpawner(Config);
     }
