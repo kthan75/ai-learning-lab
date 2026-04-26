@@ -16,8 +16,8 @@ MonoBehaviour:
   bio: Decorated shuttle pilot with an uncanny ability to find routes others miss.
   portrait: {fileID: 0}
   skills:
-    engineering: 4
-    diplomacy: 3
-    navigation: 9
-    streetSmarts: 4
-    resilience: 4
+    engineering: 2
+    diplomacy: 2
+    navigation: 5
+    streetSmarts: 2
+    resilience: 2

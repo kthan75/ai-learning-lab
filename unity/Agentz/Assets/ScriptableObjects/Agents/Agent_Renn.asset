@@ -16,8 +16,8 @@ MonoBehaviour:
   bio: Ex-military drone technician. Equally comfortable at a console or in the field.
   portrait: {fileID: 0}
   skills:
-    engineering: 7
-    diplomacy: 2
-    navigation: 7
-    streetSmarts: 2
-    resilience: 6
+    engineering: 3
+    diplomacy: 1
+    navigation: 3
+    streetSmarts: 1
+    resilience: 3

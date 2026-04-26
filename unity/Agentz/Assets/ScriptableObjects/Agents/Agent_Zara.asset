@@ -17,8 +17,8 @@ MonoBehaviour:
     a minute.
   portrait: {fileID: 0}
   skills:
-    engineering: 9
-    diplomacy: 2
-    navigation: 4
-    streetSmarts: 3
-    resilience: 6
+    engineering: 5
+    diplomacy: 1
+    navigation: 2
+    streetSmarts: 1
+    resilience: 3

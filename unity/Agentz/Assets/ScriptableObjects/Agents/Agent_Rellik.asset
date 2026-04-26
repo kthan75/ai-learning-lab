@@ -16,8 +16,8 @@ MonoBehaviour:
   bio: "Multi-lingual attach\xE9 fluent in 14 dialects. Prefers words over fists."
   portrait: {fileID: 0}
   skills:
-    engineering: 2
-    diplomacy: 9
-    navigation: 3
-    streetSmarts: 5
-    resilience: 5
+    engineering: 1
+    diplomacy: 4
+    navigation: 2
+    streetSmarts: 3
+    resilience: 2

@@ -16,8 +16,8 @@ MonoBehaviour:
   bio: Background unknown. Somehow knows everyone on every level of the station.
   portrait: {fileID: 0}
   skills:
-    engineering: 3
-    diplomacy: 4
-    navigation: 5
-    streetSmarts: 9
-    resilience: 3
+    engineering: 1
+    diplomacy: 2
+    navigation: 3
+    streetSmarts: 5
+    resilience: 1

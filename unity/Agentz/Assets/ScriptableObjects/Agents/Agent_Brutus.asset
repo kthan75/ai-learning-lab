@@ -16,8 +16,8 @@ MonoBehaviour:
   bio: Twenty-year security veteran. Hard to rattle, hard to stop.
   portrait: {fileID: 0}
   skills:
-    engineering: 3
-    diplomacy: 5
-    navigation: 3
-    streetSmarts: 6
-    resilience: 9
+    engineering: 2
+    diplomacy: 2
+    navigation: 1
+    streetSmarts: 3
+    resilience: 5
