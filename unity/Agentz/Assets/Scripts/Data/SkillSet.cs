@@ -45,6 +45,11 @@ public struct SkillSet
         "Engineering", "Diplomacy", "Navigation", "Street Smarts", "Resilience"
     };
 
+    public static readonly string[] SkillAbbreviations =
+    {
+        "ENG", "DIP", "NAV", "SSM", "RES"
+    };
+
     /// <summary>
     /// Averages this SkillSet with another (used when combining two agents).
     /// For N agents, chain: combined = a.Average(b).Average(c)... or use the static helper.

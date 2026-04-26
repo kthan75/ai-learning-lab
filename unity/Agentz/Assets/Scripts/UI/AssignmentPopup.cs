@@ -23,43 +23,45 @@ public class AssignmentPopup : MonoBehaviour
     private Button           _btnAssign;
     private GameObject       _root;
 
+    // Skill value color (bright amber — contrasts with the grey label text)
+    private static readonly Color ColSkillValue = new Color(0.91f, 0.78f, 0.29f);
+
     // ── Build (called once by GameUI) ─────────────────────────────────────────
     public void Build(Transform canvasRoot)
     {
         _root = UIHelper.Panel(canvasRoot, "AssignmentPopup",
-                               UIHelper.BgPopup, Vector2.zero, new Vector2(640, 480));
+                               UIHelper.BgPopup, Vector2.zero, new Vector2(780, 560));
         _root.SetActive(false);
 
-        // Bring to front
         _root.transform.SetAsLastSibling();
-        _root.AddComponent<CanvasGroup>();  // lets us block raycasts
+        _root.AddComponent<CanvasGroup>();
 
         var t = _root.transform;
 
         // ── Header ────────────────────────────────────────────────────────────
-        _lblTitle = UIHelper.Label(t, "Mission Title", 24, UIHelper.ColText,
-                                   new Vector2(0, 195), new Vector2(600, 40),
+        _lblTitle = UIHelper.Label(t, "Mission Title", 26, UIHelper.ColText,
+                                   new Vector2(0, 228), new Vector2(740, 44),
                                    TextAnchor.UpperCenter, FontStyle.Bold);
 
-        _lblDesc = UIHelper.Label(t, "Description", 16, UIHelper.ColSubtext,
-                                  new Vector2(0, 148), new Vector2(600, 36),
+        _lblDesc = UIHelper.Label(t, "Description", 17, UIHelper.ColSubtext,
+                                  new Vector2(0, 178), new Vector2(740, 38),
                                   TextAnchor.UpperCenter);
 
         // ── Divider ───────────────────────────────────────────────────────────
-        UIHelper.Panel(t, "Div", UIHelper.AccentBlue, new Vector2(0, 120), new Vector2(580, 2));
+        UIHelper.Panel(t, "Div", UIHelper.AccentBlue, new Vector2(0, 150), new Vector2(720, 2));
 
         // ── Agent buttons (2 rows × 3) ────────────────────────────────────────
-        UIHelper.Label(t, "Select agents (max 3):", 16, UIHelper.ColSubtext,
-                       new Vector2(-220, 100), new Vector2(260, 26));
+        UIHelper.Label(t, "Select agents (max 3):", 17, UIHelper.ColSubtext,
+                       new Vector2(-260, 128), new Vector2(280, 28));
 
         _agentBtns        = new Button[6];
         _agentBtnBgs      = new Image[6];
         _agentBtnLabels   = new Text[6];
         _agentSkillLabels = new Text[6];
 
-        float btnW = 185f, btnH = 65f, gapY = 10f;
-        float rowY0 = 55f, rowY1 = rowY0 - btnH - gapY;
-        float[] xs = { -190f, 0f, 190f };
+        float btnW = 230f, btnH = 76f, gapY = 12f;
+        float rowY0 = 70f, rowY1 = rowY0 - btnH - gapY;
+        float[] xs = { -240f, 0f, 240f };
 
         for (int i = 0; i < 6; i++)
         {
@@ -67,11 +69,11 @@ public class AssignmentPopup : MonoBehaviour
             float x = xs[col], y = (row == 0) ? rowY0 : rowY1;
 
             var btn = UIHelper.Btn(t, "", new Vector2(x, y), new Vector2(btnW, btnH),
-                                   UIHelper.BgCard, 14);
+                                   UIHelper.BgCard, 15);
             _agentBtns[i]   = btn;
             _agentBtnBgs[i] = btn.GetComponent<Image>();
 
-            // Name label — upper half of the button
+            // Name label — upper 45% of the button
             var nameLabel = btn.GetComponentInChildren<Text>();
             var nameRt    = nameLabel.GetComponent<RectTransform>();
             nameRt.anchorMin = new Vector2(0f, 0.45f);
@@ -79,39 +81,39 @@ public class AssignmentPopup : MonoBehaviour
             nameRt.offsetMin = nameRt.offsetMax = Vector2.zero;
             _agentBtnLabels[i] = nameLabel;
 
-            // Skill label — lower half of the button
+            // Skill label — lower 45% of the button
             var skillGo = new GameObject("SkillLabel", typeof(RectTransform));
             skillGo.transform.SetParent(btn.transform, false);
-            var skillRt      = skillGo.GetComponent<RectTransform>();
+            var skillRt       = skillGo.GetComponent<RectTransform>();
             skillRt.anchorMin = new Vector2(0f, 0f);
             skillRt.anchorMax = new Vector2(1f, 0.45f);
             skillRt.offsetMin = skillRt.offsetMax = Vector2.zero;
-            var skillText        = skillGo.AddComponent<UnityEngine.UI.Text>();
-            skillText.font       = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            skillText.fontSize   = 13;
-            skillText.color      = UIHelper.ColSubtext;
-            skillText.alignment  = TextAnchor.MiddleCenter;
-            _agentSkillLabels[i] = skillText;
+            var skillText         = skillGo.AddComponent<UnityEngine.UI.Text>();
+            skillText.font        = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            skillText.fontSize    = 13;
+            skillText.color       = Color.white; // base color; rich text overrides per-token
+            skillText.alignment   = TextAnchor.MiddleCenter;
+            _agentSkillLabels[i]  = skillText;
 
-            int idx = i; // capture for lambda
+            int idx = i;
             btn.onClick.AddListener(() => ToggleAgent(idx));
         }
 
         // ── Success chance ────────────────────────────────────────────────────
-        UIHelper.Label(t, "Success Chance:", 18, UIHelper.ColSubtext,
-                       new Vector2(-130, -85), new Vector2(200, 30));
+        UIHelper.Label(t, "Success Chance:", 20, UIHelper.ColSubtext,
+                       new Vector2(-140, -108), new Vector2(220, 32));
 
-        _lblChance = UIHelper.Label(t, "—", 28, UIHelper.ColText,
-                                    new Vector2(110, -85), new Vector2(180, 36),
+        _lblChance = UIHelper.Label(t, "—", 32, UIHelper.ColText,
+                                    new Vector2(120, -108), new Vector2(180, 40),
                                     TextAnchor.MiddleCenter, FontStyle.Bold);
 
         // ── Buttons ───────────────────────────────────────────────────────────
-        var btnCancel = UIHelper.Btn(t, "Cancel", new Vector2(-150, -195),
-                                     new Vector2(160, 48), UIHelper.ColDisabled, 18);
+        var btnCancel = UIHelper.Btn(t, "Cancel", new Vector2(-170, -230),
+                                     new Vector2(180, 52), UIHelper.ColDisabled, 19);
         btnCancel.onClick.AddListener(Cancel);
 
-        _btnAssign = UIHelper.Btn(t, "Assign", new Vector2(150, -195),
-                                  new Vector2(220, 48), UIHelper.AccentBlue, 20);
+        _btnAssign = UIHelper.Btn(t, "Assign", new Vector2(160, -230),
+                                  new Vector2(240, 52), UIHelper.AccentBlue, 22);
         _btnAssign.onClick.AddListener(Confirm);
     }
 
@@ -163,10 +165,14 @@ public class AssignmentPopup : MonoBehaviour
         _agentBtns[idx].interactable = avail;
 
         var s = _agents[idx].skills;
-        _agentSkillLabels[idx].text  = $"ENG:{s.engineering:0} DIP:{s.diplomacy:0} NAV:{s.navigation:0} SSM:{s.streetSmarts:0} RES:{s.resilience:0}";
-        _agentSkillLabels[idx].color = avail ? UIHelper.ColSubtext
-                                             : new Color(UIHelper.ColSubtext.r, UIHelper.ColSubtext.g,
-                                                         UIHelper.ColSubtext.b, 0.4f);
+        string valHex  = avail ? ColorUtility.ToHtmlStringRGB(ColSkillValue) : "666666";
+        string lblHex  = avail ? ColorUtility.ToHtmlStringRGB(UIHelper.ColSubtext) : "444444";
+        _agentSkillLabels[idx].text =
+            $"<color=#{lblHex}>ENG:</color><color=#{valHex}>{s.engineering:0}</color>  " +
+            $"<color=#{lblHex}>DIP:</color><color=#{valHex}>{s.diplomacy:0}</color>  " +
+            $"<color=#{lblHex}>NAV:</color><color=#{valHex}>{s.navigation:0}</color>  " +
+            $"<color=#{lblHex}>SSM:</color><color=#{valHex}>{s.streetSmarts:0}</color>  " +
+            $"<color=#{lblHex}>RES:</color><color=#{valHex}>{s.resilience:0}</color>";
     }
 
     private void RefreshChance()

@@ -24,6 +24,7 @@ public class GameUI : MonoBehaviour
     private Transform        _canvasRoot;
     private bool             _popupOpen;
     private bool             _resultOpen;
+    private bool             _roundEndPending;
 
     // ── Layout constants ─────────────────────────────────────────────────────
     const float CardW = 430f, CardH = 195f, CardGapX = 20f, CardGapY = 16f;
@@ -122,7 +123,16 @@ public class GameUI : MonoBehaviour
         rpGo.transform.SetParent(_canvasRoot, false);
         _resultPopup = rpGo.AddComponent<ResultPopup>();
         _resultPopup.Build(_canvasRoot);
-        _resultPopup.OnDismissed += () => { _resultOpen = (_resultPopup.HasQueued); RefreshPause(); };
+        _resultPopup.OnDismissed += () =>
+        {
+            _resultOpen = _resultPopup.HasQueued;
+            RefreshPause();
+            if (!_resultOpen && _roundEndPending)
+            {
+                _roundEndPending = false;
+                ShowRoundOver();
+            }
+        };
 
         // Round over panel
         var roGo = new GameObject("RoundOverPanel", typeof(RectTransform));
@@ -148,9 +158,10 @@ public class GameUI : MonoBehaviour
         gm.OnRoundEnd += () =>
         {
             _assignPopup.Hide();
-            _roundOver.Show(gm.RoundNumber, gm.MissionsCompleted,
-                            gm.Gold, gm.TotalGold, gm.Score, gm.TotalScore,
-                            gm.RoundWasFailure);
+            if (_resultOpen)
+                _roundEndPending = true;   // defer until last result popup is dismissed
+            else
+                ShowRoundOver();
         };
 
         ms.OnMissionSpawned  += OnMissionSpawned;
@@ -200,6 +211,14 @@ public class GameUI : MonoBehaviour
 
     // ── Pause helper / Interaction handlers ──────────────────────────────────
     /// <summary>Freeze mission timers whenever any popup is blocking the board.</summary>
+    private void ShowRoundOver()
+    {
+        var gm = GameManager.Instance;
+        _roundOver.Show(gm.RoundNumber, gm.MissionsCompleted,
+                        gm.Gold, gm.TotalGold, gm.Score, gm.TotalScore,
+                        gm.RoundWasFailure);
+    }
+
     private void RefreshPause()
     {
         MissionSpawner.Instance.PauseMissions = _popupOpen || _resultOpen;
@@ -231,6 +250,8 @@ public class GameUI : MonoBehaviour
     private void OnNextRound()
     {
         _roundOver.Hide();
+        _roundEndPending = false;
+        _resultOpen = false;
         _missionToSlot.Clear();
         foreach (var s in _slots) s.Clear();
         foreach (var a in Agents) if (a != null) a.isAvailable = true;
@@ -244,6 +265,8 @@ public class GameUI : MonoBehaviour
     private void OnRestart()
     {
         _roundOver.Hide();
+        _roundEndPending = false;
+        _resultOpen = false;
         _missionToSlot.Clear();
         foreach (var s in _slots) s.Clear();
         foreach (var a in Agents) if (a != null) a.isAvailable = true;

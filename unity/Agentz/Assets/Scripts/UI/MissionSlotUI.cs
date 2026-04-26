@@ -16,8 +16,8 @@ public class MissionSlotUI : MonoBehaviour
     private Image   _timerFill, _background;
     private GameObject _emptyOverlay, _activeOverlay;
 
-    // Skill bar fills (5 bars)
-    private Image[] _skillFills = new Image[5];
+    // 5 fixed-position skill badges — only top-2 shown at a time
+    private GameObject[] _skillBadgeRoots  = new GameObject[5];
 
     private float _flashTimer;     // shows resolved state briefly
     private const float FlashDuration = 1.8f;
@@ -59,29 +59,31 @@ public class MissionSlotUI : MonoBehaviour
                                     new Vector2(0, -55), new Vector2(size.x - 20, 30),
                                     TextAnchor.LowerCenter);
 
-        // Timer bar
+        // Timer label (above bar) + timer bar
         float bw = size.x - 20;
+        _lblTimer = UIHelper.Label(at, "20s", 14, UIHelper.ColSubtext,
+                                   new Vector2(0, 42), new Vector2(bw, 18),
+                                   TextAnchor.MiddleRight);
+
         var (_, fill) = UIHelper.ProgressBar(at,
                                               new Vector2(0, 28), new Vector2(bw, 10),
                                               UIHelper.ColDisabled, UIHelper.AccentBlue);
         _timerFill = fill;
 
-        _lblTimer = UIHelper.Label(at, "20s", 14, UIHelper.ColSubtext,
-                                   new Vector2(bw / 2 - 20, 28), new Vector2(40, 20));
-
-        // Skill bars (5 mini bars)
+        // 5 fixed-position skill badges — one slot per skill in canonical order
+        float badgeW = (bw - 4 * 6) / 5f; // same spacing logic as old skill bars
+        float badgeH = 22f;
         for (int i = 0; i < 5; i++)
         {
-            float bwSingle = (bw - 4 * 6) / 5f;
-            float xOff = -bw / 2f + i * (bwSingle + 6) + bwSingle / 2f;
-            var (_, sf) = UIHelper.ProgressBar(at,
-                                                new Vector2(xOff, 5), new Vector2(bwSingle, 8),
-                                                UIHelper.ColDisabled, UIHelper.AccentBlue);
-            _skillFills[i] = sf;
-
-            UIHelper.Label(at, SkillSet.SkillNames[i].Substring(0, 3),
-                           11, UIHelper.ColSubtext,
-                           new Vector2(xOff, -5), new Vector2(bwSingle, 14));
+            float xOff = -bw / 2f + i * (badgeW + 6) + badgeW / 2f;
+            var badgeGo = UIHelper.Panel(at, $"SkillBadge{i}",
+                                         UIHelper.AccentBlue,
+                                         new Vector2(xOff, 8), new Vector2(badgeW, badgeH));
+            UIHelper.Label(badgeGo.transform, SkillSet.SkillAbbreviations[i], 13, Color.white,
+                           Vector2.zero, new Vector2(badgeW, badgeH),
+                           TextAnchor.MiddleCenter, FontStyle.Bold);
+            badgeGo.SetActive(false);
+            _skillBadgeRoots[i] = badgeGo;
         }
 
         ShowEmpty();
@@ -108,7 +110,8 @@ public class MissionSlotUI : MonoBehaviour
 
         if (_flashTimer > 0f)
         {
-            _flashTimer -= Time.deltaTime;
+            if (MissionSpawner.Instance == null || !MissionSpawner.Instance.PauseMissions)
+                _flashTimer -= Time.deltaTime;
             if (_flashTimer <= 0f) Clear();
             return;
         }
@@ -125,10 +128,17 @@ public class MissionSlotUI : MonoBehaviour
         _activeOverlay.SetActive(true);
         _lblTitle.text = _mission.Template.missionTitle;
 
-        var req = _mission.Template.requiredSkills;
-        var arr = req.ToArray();
+        // Show only the top-2 skill badges in their fixed positional slots
+        var arr = _mission.Template.requiredSkills.ToArray();
+        int first = -1, second = -1;
         for (int i = 0; i < 5; i++)
-            _skillFills[i].fillAmount = arr[i] / 10f;
+        {
+            if (arr[i] <= 0f) continue;
+            if (first < 0 || arr[i] > arr[first]) { second = first; first = i; }
+            else if (second < 0 || arr[i] > arr[second]) second = i;
+        }
+        for (int i = 0; i < 5; i++)
+            _skillBadgeRoots[i].SetActive(i == first || i == second);
 
         switch (_mission.State)
         {
