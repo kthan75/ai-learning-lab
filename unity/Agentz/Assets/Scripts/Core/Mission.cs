@@ -102,7 +102,10 @@ public class Mission
         ScaledRequirement = scaled;
         OverlapPct = SkillSet.ComputeOverlap(combined, scaled);
         DiceRoll   = UnityEngine.Random.Range(1, 101);
-        WasSuccess = DiceRoll <= Mathf.RoundToInt(OverlapPct * 100f);
+        // Bigger is better: succeed by rolling ABOVE (100 - match%). Identical odds
+        // to rolling <= match%, but reads intuitively — you want a high roll.
+        int matchPct = Mathf.RoundToInt(OverlapPct * 100f);
+        WasSuccess = DiceRoll > 100 - matchPct;
 
         State = MissionState.Resolved;
         OnResolved?.Invoke(WasSuccess, OverlapPct, DiceRoll);

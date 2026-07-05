@@ -45,32 +45,34 @@ public class ResultPopup : MonoBehaviour
         var t = _root.transform;
 
         _lblOutcome = UIHelper.Label(t, "SUCCESS", 38, UIHelper.ColSuccess,
-                                     new Vector2(0, 180), new Vector2(480, 56),
+                                     new Vector2(0, 186), new Vector2(480, 54),
                                      TextAnchor.MiddleCenter, FontStyle.Bold);
 
         _lblMission = UIHelper.Label(t, "Mission Title", 18, UIHelper.ColSubtext,
-                                     new Vector2(0, 140), new Vector2(480, 26),
+                                     new Vector2(0, 146), new Vector2(480, 26),
                                      TextAnchor.MiddleCenter);
 
-        UIHelper.Panel(t, "Div", UIHelper.AccentBlue, new Vector2(0, 118), new Vector2(460, 2));
+        UIHelper.Panel(t, "Div", UIHelper.AccentBlue, new Vector2(0, 124), new Vector2(460, 2));
+
+        // Skill match — headline stat, above the chart
+        _lblMatch = UIHelper.Label(t, "Skill match: 72%", 20, UIHelper.ColText,
+                                   new Vector2(0, 100), new Vector2(480, 28),
+                                   TextAnchor.MiddleCenter, FontStyle.Bold);
 
         // ── Spider chart ────────────────────────────────────────────────────────
-        _spider = SpiderChart.Create(t, new Vector2(0, 30), 175f);
+        _spider = SpiderChart.Create(t, new Vector2(0, -4), 170f);
 
         UIHelper.Label(t, "<color=#FFB840>■</color> Required   <color=#7AB3FF>■</color> Team",
-                       14, UIHelper.ColSubtext, new Vector2(0, -75), new Vector2(480, 24));
+                       14, UIHelper.ColSubtext, new Vector2(0, -96), new Vector2(480, 22));
 
-        _lblMatch = UIHelper.Label(t, "Skill match: 72%", 19, UIHelper.ColText,
-                                   new Vector2(0, -104), new Vector2(480, 28));
-
-        _lblRoll  = UIHelper.Label(t, "Rolled: 45  (needed ≤ 72)", 17, UIHelper.ColText,
-                                   new Vector2(0, -134), new Vector2(480, 26));
+        _lblRoll  = UIHelper.Label(t, "Rolled: 55  (needed > 28)", 17, UIHelper.ColText,
+                                   new Vector2(0, -120), new Vector2(480, 24));
 
         _lblAgents = UIHelper.Label(t, "Agents: Zara, Mira", 14, UIHelper.ColSubtext,
-                                    new Vector2(0, -162), new Vector2(480, 24));
+                                    new Vector2(0, -146), new Vector2(480, 22));
 
-        var btnOK = UIHelper.Btn(t, "OK", new Vector2(0, -200),
-                                 new Vector2(180, 46), UIHelper.AccentBlue, 20);
+        var btnOK = UIHelper.Btn(t, "OK", new Vector2(0, -192),
+                                 new Vector2(180, 44), UIHelper.AccentBlue, 20);
         btnOK.onClick.AddListener(Dismiss);
     }
 
@@ -107,7 +109,7 @@ public class ResultPopup : MonoBehaviour
         _showing = true;
         var d    = _queue.Dequeue();
         int pct  = Mathf.RoundToInt(d.OverlapPct * 100f);
-        int need = pct;
+        int need = 100 - pct;   // must roll strictly greater than this
 
         _lblOutcome.text  = d.Success ? "✓  SUCCESS" : "✗  FAILED";
         _lblOutcome.color = d.Success ? UIHelper.ColSuccess : UIHelper.ColFail;
@@ -116,9 +118,12 @@ public class ResultPopup : MonoBehaviour
 
         _lblMission.text = d.MissionTitle;
         _lblMatch.text   = $"Skill match:  {pct}%";
-        _lblRoll.text    = $"Rolled: {d.DiceRoll}   (needed ≤ {need})";
+        _lblRoll.text    = $"Rolled: {d.DiceRoll}   (needed > {need})";
         _lblAgents.text  = $"Agents: {d.AgentNames}";
-        _spider.SetData(d.Requirement, d.HasChart, d.Combined, d.HasChart);
+        if (d.HasChart)
+            _spider.SetResult(d.Requirement, d.Combined, d.Success);
+        else
+            _spider.SetData(d.Requirement, false, default, false);
 
         _root.SetActive(true);
         _root.transform.SetAsLastSibling();
