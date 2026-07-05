@@ -22,6 +22,7 @@ public class AssignmentPopup : MonoBehaviour
     private Text[]           _agentSkillLabels;
     private Button           _btnAssign;
     private GameObject       _root;
+    private SpiderChart      _spider;
 
     // Skill value color (bright amber — contrasts with the grey label text)
     private static readonly Color ColSkillValue = new Color(0.91f, 0.78f, 0.29f);
@@ -30,7 +31,7 @@ public class AssignmentPopup : MonoBehaviour
     public void Build(Transform canvasRoot)
     {
         _root = UIHelper.Panel(canvasRoot, "AssignmentPopup",
-                               UIHelper.BgPopup, Vector2.zero, new Vector2(780, 560));
+                               UIHelper.BgPopup, Vector2.zero, new Vector2(800, 640));
         _root.SetActive(false);
 
         _root.transform.SetAsLastSibling();
@@ -40,28 +41,28 @@ public class AssignmentPopup : MonoBehaviour
 
         // ── Header ────────────────────────────────────────────────────────────
         _lblTitle = UIHelper.Label(t, "Mission Title", 26, UIHelper.ColText,
-                                   new Vector2(0, 228), new Vector2(740, 44),
+                                   new Vector2(0, 280), new Vector2(760, 44),
                                    TextAnchor.UpperCenter, FontStyle.Bold);
 
         _lblDesc = UIHelper.Label(t, "Description", 17, UIHelper.ColSubtext,
-                                  new Vector2(0, 178), new Vector2(740, 38),
+                                  new Vector2(0, 236), new Vector2(760, 34),
                                   TextAnchor.UpperCenter);
 
         // ── Divider ───────────────────────────────────────────────────────────
-        UIHelper.Panel(t, "Div", UIHelper.AccentBlue, new Vector2(0, 150), new Vector2(720, 2));
+        UIHelper.Panel(t, "Div", UIHelper.AccentBlue, new Vector2(0, 212), new Vector2(760, 2));
 
         // ── Agent buttons (2 rows × 3) ────────────────────────────────────────
         UIHelper.Label(t, "Select agents (max 3):", 17, UIHelper.ColSubtext,
-                       new Vector2(-260, 128), new Vector2(280, 28));
+                       new Vector2(-268, 190), new Vector2(300, 26), TextAnchor.MiddleLeft);
 
         _agentBtns        = new Button[6];
         _agentBtnBgs      = new Image[6];
         _agentBtnLabels   = new Text[6];
         _agentSkillLabels = new Text[6];
 
-        float btnW = 230f, btnH = 76f, gapY = 12f;
-        float rowY0 = 70f, rowY1 = rowY0 - btnH - gapY;
-        float[] xs = { -240f, 0f, 240f };
+        float btnW = 235f, btnH = 72f, gapY = 12f;
+        float rowY0 = 140f, rowY1 = rowY0 - btnH - gapY;
+        float[] xs = { -250f, 0f, 250f };
 
         for (int i = 0; i < 6; i++)
         {
@@ -99,21 +100,32 @@ public class AssignmentPopup : MonoBehaviour
             btn.onClick.AddListener(() => ToggleAgent(idx));
         }
 
-        // ── Success chance ────────────────────────────────────────────────────
-        UIHelper.Label(t, "Success Chance:", 20, UIHelper.ColSubtext,
-                       new Vector2(-140, -108), new Vector2(220, 32));
+        // ── Divider ───────────────────────────────────────────────────────────
+        UIHelper.Panel(t, "Div2", UIHelper.AccentBlue, new Vector2(0, -8), new Vector2(760, 2));
 
-        _lblChance = UIHelper.Label(t, "—", 32, UIHelper.ColText,
-                                    new Vector2(120, -108), new Vector2(180, 40),
+        // ── Spider chart (left) ────────────────────────────────────────────────
+        _spider = SpiderChart.Create(t, new Vector2(-210, -130), 200f);
+
+        // ── Success chance + legend (right) ────────────────────────────────────
+        UIHelper.Label(t, "Success Chance:", 20, UIHelper.ColSubtext,
+                       new Vector2(150, -40), new Vector2(300, 30));
+
+        _lblChance = UIHelper.Label(t, "—", 34, UIHelper.ColText,
+                                    new Vector2(150, -92), new Vector2(300, 46),
                                     TextAnchor.MiddleCenter, FontStyle.Bold);
 
+        UIHelper.Label(t, "<color=#FFB840>■</color> Mission required", 15, UIHelper.ColSubtext,
+                       new Vector2(150, -140), new Vector2(300, 24));
+        UIHelper.Label(t, "<color=#7AB3FF>■</color> Your team", 15, UIHelper.ColSubtext,
+                       new Vector2(150, -168), new Vector2(300, 24));
+
         // ── Buttons ───────────────────────────────────────────────────────────
-        var btnCancel = UIHelper.Btn(t, "Cancel", new Vector2(-170, -230),
-                                     new Vector2(180, 52), UIHelper.ColDisabled, 19);
+        var btnCancel = UIHelper.Btn(t, "Cancel", new Vector2(-150, -292),
+                                     new Vector2(190, 52), UIHelper.ColDisabled, 19);
         btnCancel.onClick.AddListener(Cancel);
 
-        _btnAssign = UIHelper.Btn(t, "Assign", new Vector2(160, -230),
-                                  new Vector2(240, 52), UIHelper.AccentBlue, 22);
+        _btnAssign = UIHelper.Btn(t, "Assign", new Vector2(150, -292),
+                                  new Vector2(220, 52), UIHelper.AccentBlue, 22);
         _btnAssign.onClick.AddListener(Confirm);
     }
 
@@ -177,12 +189,14 @@ public class AssignmentPopup : MonoBehaviour
 
     private void RefreshChance()
     {
+        var required = _mission.Template.requiredSkills;
         var selectedAgents = SelectedAgents();
         if (selectedAgents.Count == 0)
         {
             _lblChance.text  = "—";
             _lblChance.color = UIHelper.ColSubtext;
             _btnAssign.interactable = false;
+            _spider.SetData(required, true, default, false); // requirement only
             return;
         }
 
@@ -191,7 +205,7 @@ public class AssignmentPopup : MonoBehaviour
             sets[i] = selectedAgents[i].skills;
         var mode = GameManager.Instance.Config.skillCombineMode;
         var combined = SkillSet.CombineAll(sets, mode);
-        float overlap = SkillSet.ComputeOverlap(combined, _mission.Template.requiredSkills);
+        float overlap = SkillSet.ComputeOverlap(combined, required);
         int pct = Mathf.RoundToInt(overlap * 100f);
 
         _lblChance.text  = $"{pct}%";
@@ -200,6 +214,7 @@ public class AssignmentPopup : MonoBehaviour
                          : UIHelper.ColFail;
 
         _btnAssign.interactable = true;
+        _spider.SetData(required, true, combined, true);
     }
 
     private void Confirm()

@@ -19,9 +19,11 @@ public class Mission
     public List<AgentData> AssignedAgents  { get; } = new List<AgentData>();
 
     // ── Resolution results (valid after Resolved) ────────────────────────────
-    public bool  WasSuccess    { get; private set; }
-    public float OverlapPct    { get; private set; }   // 0..1
-    public int   DiceRoll      { get; private set; }   // 1..100
+    public bool     WasSuccess        { get; private set; }
+    public float    OverlapPct        { get; private set; }   // 0..1
+    public int      DiceRoll          { get; private set; }   // 1..100
+    public SkillSet CombinedSkills    { get; private set; }   // assigned agents combined
+    public SkillSet ScaledRequirement { get; private set; }   // requirement after difficulty scaling
 
     // ── Events ───────────────────────────────────────────────────────────────
     public event Action                    OnExpired;
@@ -96,6 +98,8 @@ public class Mission
             Mathf.Min(req.resilience   * s, 10f)
         );
 
+        CombinedSkills    = combined;
+        ScaledRequirement = scaled;
         OverlapPct = SkillSet.ComputeOverlap(combined, scaled);
         DiceRoll   = UnityEngine.Random.Range(1, 101);
         WasSuccess = DiceRoll <= Mathf.RoundToInt(OverlapPct * 100f);
