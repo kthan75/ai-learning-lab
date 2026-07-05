@@ -498,6 +498,13 @@ $RECYCLE.BIN/
 !/[Pp]ackages/**/*.meta
 !/[Pp]roject[Ss]ettings/**/*.meta
 
+# Same, but for Unity projects nested in a subdirectory (e.g. unity/Agentz).
+# The rules above are anchored to the repo root; these match at any depth.
+# Library/ etc. stay ignored as directories, so their metas are not re-included.
+!/**/[Aa]ssets/**/*.meta
+!/**/[Pp]ackages/**/*.meta
+!/**/[Pp]roject[Ss]ettings/**/*.meta
+
 # Unity generated IDE files
 *.csproj
 *.sln
