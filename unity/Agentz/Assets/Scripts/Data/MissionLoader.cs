@@ -39,7 +39,7 @@ public static class MissionLoader
                 string line = lines[i].Trim();
                 if (string.IsNullOrEmpty(line)) continue;
 
-                var fields = ParseCsvLine(line);
+                var fields = CsvUtil.ParseLine(line);
                 if (fields.Count < 9)
                 {
                     Debug.LogWarning($"[MissionLoader] Line {i + 1} has {fields.Count} fields (expected 9), skipping.");
@@ -78,54 +78,5 @@ public static class MissionLoader
             Debug.LogError($"[MissionLoader] Failed to parse {FileName}: {ex.Message}. Using built-in missions.");
             return DefaultMissions.All;
         }
-    }
-
-    // ── Minimal CSV parser — handles quoted fields containing commas ──────────
-    private static List<string> ParseCsvLine(string line)
-    {
-        var fields = new List<string>();
-        int i = 0;
-
-        while (i < line.Length)
-        {
-            if (line[i] == '"')
-            {
-                // Quoted field
-                i++; // skip opening quote
-                var sb = new System.Text.StringBuilder();
-                while (i < line.Length)
-                {
-                    if (line[i] == '"')
-                    {
-                        if (i + 1 < line.Length && line[i + 1] == '"')
-                        {
-                            sb.Append('"'); // escaped quote ""
-                            i += 2;
-                        }
-                        else
-                        {
-                            i++; // closing quote
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        sb.Append(line[i++]);
-                    }
-                }
-                fields.Add(sb.ToString());
-                if (i < line.Length && line[i] == ',') i++; // skip comma
-            }
-            else
-            {
-                // Unquoted field
-                int start = i;
-                while (i < line.Length && line[i] != ',') i++;
-                fields.Add(line.Substring(start, i - start).Trim());
-                if (i < line.Length) i++; // skip comma
-            }
-        }
-
-        return fields;
     }
 }
