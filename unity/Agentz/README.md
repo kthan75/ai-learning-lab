@@ -4,8 +4,8 @@ A fast-paced, real-time dispatch game: assign skill-differentiated agents to tim
 on a chaotic space station, resolve them with a visible dice roll, and survive as many
 rounds as you can. Built in **Unity (2D)**.
 
-**Status:** M1 complete — playable core loop (spawn → assign → resolve → multi-round).
-Next up: **M2**, the spider-chart skill-matching visual.
+**Status:** M1 + M2 complete — playable core loop plus skill-matching visuals (spider charts,
+agent portraits). Next up: **M3**, economy polish & the between-round upgrade screen.
 
 ## Documentation
 - **[docs/GDD.md](docs/GDD.md)** — Game Design Document (design intent + how it's actually
@@ -34,11 +34,12 @@ See [docs/EDITING_GUIDE.md](docs/EDITING_GUIDE.md) for formats, gotchas, and the
 ```
 unity/Agentz/Assets/
   Scripts/
-    Config/   GameConfig.cs                     # all tunable constants
-    Data/     SkillSet, AgentData, MissionTemplate, DefaultAgents,
-              DefaultMissions, MissionLoader     # data model + CSV loading + core math
+    Config/   GameConfig, ConfigLoader           # tunables + config.json overrides
+    Data/     SkillSet, AgentData, MissionTemplate, Default*, MissionLoader,
+              AgentLoader, PortraitLoader, CsvUtil  # data model + loaders + core math
     Core/     GameManager, MissionSpawner, Mission, GameBootstrapper
-    UI/       GameUI + panels/popups (all built at runtime)
-  StreamingAssets/missions.csv                   # plain-text mission data
+    UI/       GameUI + panels/popups + SpiderChart (all built at runtime)
+    Editor/   AgentzDataMenu                     # Export/Import sync menu (editor-only)
+  StreamingAssets/  missions.csv, agents.csv, config.json, Portraits/  # plain-text data
 docs/                                            # this documentation set
 ```

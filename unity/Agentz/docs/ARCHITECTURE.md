@@ -22,6 +22,7 @@ GameBootstrapper.Awake()
   ├─ validate GameConfig (assigned in Inspector)
   ├─ runtimeConfig = ConfigLoader.LoadOverride(config)   // config.json wins if present
   ├─ roster        = AgentLoader.LoadRoster(agents)      // agents.csv wins if present
+  ├─ PortraitLoader.LoadInto(roster)                     // fills AgentData.portrait from files
   ├─ reset each roster AgentData.isAvailable = true
   ├─ new GameObject "GameManager"    → GameManager.Initialize(runtimeConfig)
   ├─ new GameObject "MissionSpawner" → MissionSpawner.Initialize(runtimeConfig, missionPool)
@@ -66,6 +67,9 @@ See [EDITING_GUIDE.md](EDITING_GUIDE.md) for the editing workflow and the Editor
 - **`AgentLoader.cs`** — reads `StreamingAssets/agents.csv` (Model B). Precedence:
   `agents.csv` → Inspector roster → `DefaultAgents.All`. Clones name-matched Inspector assets
   so portraits survive.
+- **`PortraitLoader.cs`** *(M2)* — at boot, fills `AgentData.portrait` from
+  `StreamingAssets/Portraits/<name-slug>.png` (decodes to a runtime `Sprite`). Inspector-
+  assigned portraits take precedence; missing files are skipped.
 - **`CsvUtil.cs`** — shared quoted-CSV line parser + field-quoting helper, used by both
   loaders and the Editor menu.
 
@@ -90,16 +94,24 @@ See [EDITING_GUIDE.md](EDITING_GUIDE.md) for the editing workflow and the Editor
 
 ### UI — `UI/` (all runtime-built)
 - **`GameUI.cs`** — top-level UI controller; builds the Canvas, owns child panels, sets
-  `PauseMissions` when popups are open, and sequences result popups.
+  `PauseMissions` when popups are open, sequences result popups, and hides the roster while
+  the assign popup is open.
 - **`HUDPanel.cs`** — top bar: score, round #, round timer, failures, gold (per-round/total
   "R/T").
-- **`AgentRosterPanel.cs`** — bottom roster of agent cards (skills + deployed state).
+- **`SpiderChart.cs`** *(M2)* — reusable radar-chart `Graphic` drawn in one runtime mesh.
+  Modes: **dual** (mission-required vs. combined team), **single** (one agent's skills, for
+  mini cards), and **result** (win → green overlap, loss → red uncovered requirement). Label
+  modes: names, or names+values. Built via `SpiderChart.Create(...)`.
+- **`AgentRosterPanel.cs`** — bottom roster of agent cards (portrait + mini chart + name +
+  deployment status). `SetVisible(false)` hides it while the assign popup is open.
 - **`MissionSlotUI.cs`** — a mission card on the board.
-- **`AssignmentPopup.cs`** — mission detail + agent-slot assignment + Assign button.
-- **`ResultPopup.cs`** — resolution result (overlap %, dice roll, outcome).
-  *M2 adds the spider-chart visual here and in the assignment popup.*
+- **`AssignmentPopup.cs`** — mission detail + agent cards (portrait + mini chart) + live
+  team-vs-mission summary chart + success % + Assign button.
+- **`ResultPopup.cs`** — resolution result: skill match %, result spider chart (outcome
+  coloring), dice roll, agents.
 - **`RoundOverPanel.cs`** — end-of-round summary; next round / restart.
-- **`UIHelper.cs`** — shared factory helpers for building UI elements in code.
+- **`UIHelper.cs`** — shared factory helpers (panels, labels, buttons, **portraits**) for
+  building UI elements in code.
 
 ### Editor — `Editor/` (editor-only assembly)
 - **`AgentzDataMenu.cs`** — the **Agentz** menu bar entries that sync data between assets and
@@ -129,10 +141,9 @@ Mission.Tick() counts down busy → Mission.Resolve()
 ```
 
 ## Where M2 / M3 plug in
-- **M2 (spider chart):** the math already exists (`SkillSet.ComputeOverlap` and the two
-  `SkillSet`s involved). M2 is a **new UI widget** that draws two overlaid pentagons
-  (mission required vs. combined agents) inside `AssignmentPopup` and `ResultPopup`. No core
-  logic changes required.
+- **M2 (spider chart + portraits):** ✅ done. `SpiderChart` renders the overlaps; `Mission`
+  exposes `CombinedSkills` + `ScaledRequirement` for the truthful result chart; `PortraitLoader`
+  fills `AgentData.portrait` at boot. See the UI section above.
 - **M3 (upgrade screen):** `RoundOverPanel` → new upgrade UI that spends `GameManager.Gold`
   to raise `AgentData.skills`, priced via `GameConfig.skillUpgradeCost*` (currently unused).
 

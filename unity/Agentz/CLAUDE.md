@@ -6,8 +6,9 @@ Guidance for AI sessions working on this project. Read the docs before making ch
 
 ## What this is
 A real-time dispatch game — assign 1–3 skill-differentiated agents to timed missions, resolve
-via overlap%→D100 roll, survive rounds. **M1 (playable core loop) is complete.** Next
-milestone is **M2: the spider/radar chart visual** for skill matching.
+via overlap%→D100 roll, survive rounds. **M1 (core loop) and M2 (spider-chart visuals + agent
+portraits) are complete.** Next milestone is **M3: economy polish & the between-round upgrade
+screen.**
 
 ## Working with the user
 - **Beginner to Unity.** Any manual Editor work (creating assets, setting Inspector fields,
@@ -33,9 +34,11 @@ milestone is **M2: the spider/radar chart visual** for skill matching.
 ## Key facts / conventions
 - **Skill combine mode defaults to `Max`** (not Average as the original GDD said) — set in
   `GameConfig.skillCombineMode`. Options: Average / Additive / Max.
-- **Success math:** `overlap = Σ min(agent, required) / Σ required`, then
-  `success = D100 <= round(overlap × 100)`. Requirements are scaled by round difficulty
-  first. All in `SkillSet.ComputeOverlap` + `Mission.Resolve`.
+- **Success math:** `overlap = Σ min(agent, required) / Σ required`, then (M2) **roll high to
+  win:** `success = D100 > (100 − matchPct)` — same odds as the old `≤ matchPct`, but intuitive.
+  Requirements are scaled by round difficulty first. In `SkillSet.ComputeOverlap` +
+  `Mission.Resolve`. `Mission` also exposes `CombinedSkills` + `ScaledRequirement` for the
+  result chart's win/loss coloring.
 - **Missions** are editable via `Assets/StreamingAssets/missions.csv` — **but only if the
   scene's Mission Pool slot is empty** (otherwise assigned `MissionTemplate`s win). Fallback:
   `DefaultMissions.cs` (30 missions).
@@ -45,17 +48,20 @@ milestone is **M2: the spider/radar chart visual** for skill matching.
   left empty). Overrides never mutate the assets; sync explicitly via the **Agentz** Editor
   menu (Export/Import). Loaders: `AgentLoader`, `ConfigLoader`, `MissionLoader`;
   `CsvUtil` is shared.
+- **Portraits (M2):** loaded at boot by `PortraitLoader` from
+  `StreamingAssets/Portraits/<name-slug>.png` into `AgentData.portrait`; Inspector portraits
+  win. Shown on assign-popup + roster cards via `UIHelper.Portrait`/`SetPortrait`.
+- **Spider charts (M2):** `SpiderChart` (a `Graphic`) has dual / single-agent / result modes;
+  reuse it, don't reinvent. The roster hides while the assign popup is open.
 - **Popup pause:** any open popup sets `MissionSpawner.PauseMissions`, freezing all timers
   (mission, spawn, round). Preserve this when adding UI.
 - **Defined-but-unused config:** `baseGoldReward`, `roundCompletionBonus`, and the
   `skillUpgradeCost*` fields are not read yet — don't assume they affect gameplay.
 
-## Where the next milestones plug in
-- **M2 (spider chart):** the math already exists; add a **UI widget** that draws two overlaid
-  pentagons (mission required vs. combined agents) in `AssignmentPopup` and `ResultPopup`. No
-  core-logic change needed.
+## Where the next milestone plugs in
 - **M3 (upgrade screen):** extend `RoundOverPanel`; spend `GameManager.Gold` to raise
-  `AgentData.skills`, priced via the (currently unused) `GameConfig.skillUpgradeCost*`.
+  `AgentData.skills`, priced via the (currently unused) `GameConfig.skillUpgradeCost*`. The
+  `SpiderChart` widget can visualize an agent's stats on the upgrade page.
 
 ## Gotchas
 - Editing a `Default*.cs` file changes *defaults/fallbacks*, not the scene assets already in

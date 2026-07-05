@@ -1,7 +1,7 @@
 # Agentz — Game Design Document
 
 **Version:** 1.3 (expanded from v1.2)
-**Status:** M1 complete (playable core loop). M2–M5 pending.
+**Status:** M1 + M2 complete (core loop + skill-matching visuals). M3–M5 pending.
 **Engine:** Unity 2D · **Platform:** PC (MVP), mobile later · **Team:** Solo (+ AI coding)
 
 > This document is the living design spec. It began as `Agentz_GDD_v1.2.docx` and has
@@ -117,7 +117,7 @@ Each agent (and each mission) is described by the **same five skills**, valued *
 | Street Smarts | SSM | Investigation, informants, covert work |
 | Resilience    | RES | Endurance, crisis nerves, physical danger |
 
-Skills are visualized as a **radar / spider chart** (M2 deliverable).
+Skills are visualized as a **radar / spider chart** (built in M2 — see `SpiderChart`).
 
 > **Naming note:** Street Smarts is abbreviated **SSM** everywhere (code field is
 > `streetSmarts`) for consistency with the other three-letter codes. The canonical order
@@ -164,8 +164,11 @@ to what each axis actually demands.
 
 **⚙️ Implemented as — resolution:** required skills are first multiplied by the round's
 difficulty scale (capped at 10 per axis). Then `DiceRoll = Random(1..100)` and
-`success = DiceRoll <= round(overlap × 100)`. Both the overlap % and the roll are surfaced
-to the UI so the outcome is legible (BG3-style).
+`success = DiceRoll > (100 − matchPct)` — i.e. **roll high to win** (identical odds to the
+old `≤ matchPct`, but intuitive: bigger is better). Both the overlap % and the roll are
+surfaced to the UI so the outcome is legible (BG3-style). The result popup also colors the
+outcome on the spider chart — the covered overlap green on a win, the uncovered requirement
+red on a loss — so the player sees *where* the roll landed.
 
 ### 4.4 Failure system
 - Failure = a failed roll **or** an expired (Waiting) mission.
@@ -256,7 +259,11 @@ ScreenSpace-Overlay Canvas. Visual polish and game-feel are the M4 focus.
 **⚙️ Implemented in M1:** dispatch screen, mission cards with skill hints, assignment popup,
 result popups (numeric overlap % + roll), roster cards with a "deployed" label, and
 sequenced popups (results queue and pause the game).
-**⚠️ Not yet built:** the **spider-chart visual** (M2) and the **upgrade screen** (M3).
+**⚙️ Added in M2:** live spider charts in the assign popup (team vs. mission) and result
+popup (with win/loss overlap coloring); per-agent cards showing **portrait + mini chart** in
+both the assign popup and the roster; the roster hides while the assign popup is open.
+Agent **portraits** load from `StreamingAssets/Portraits/` (see EDITING_GUIDE).
+**⚠️ Not yet built:** the **upgrade screen** (M3).
 
 ---
 
@@ -283,8 +290,8 @@ optimization.
 |-----------|-------|--------|
 | **M0** | Project scaffolding (ScriptableObjects, GameConfig, 6 AgentData, GameScene) | ✅ Done |
 | **M1** | Playable core loop — spawn, assign, resolve, multi-round, HUD | ✅ Done |
-| **M2** | **Spider/radar chart visual** for skill matching (agent vs. mission overlap) | ⬜ Next |
-| **M3** | Economy polish & **between-round upgrade screen** | ⬜ Pending |
+| **M2** | Spider/radar chart visuals + agent portraits (assign popup, result, roster) | ✅ Done |
+| **M3** | Economy polish & **between-round upgrade screen** | ⬜ Next |
 | **M4** | Layout polish, visual feedback, game feel | ⬜ Pending |
 | **M5** | Content & balance pass | ⬜ Pending |
 
