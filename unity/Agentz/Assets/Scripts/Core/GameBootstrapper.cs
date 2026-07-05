@@ -36,6 +36,9 @@ public class GameBootstrapper : MonoBehaviour
         var runtimeConfig = ConfigLoader.LoadOverride(config);
         var roster        = AgentLoader.LoadRoster(agents);
 
+        // Load portraits from StreamingAssets/Portraits (fills any agent lacking one)
+        PortraitLoader.LoadInto(roster);
+
         // Reset agent availability on whichever roster we ended up with
         foreach (var a in roster)
             if (a != null) a.isAvailable = true;

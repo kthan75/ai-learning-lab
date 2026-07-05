@@ -114,6 +114,15 @@ Smarts), res**. Current tuned roster:
 | Sergeant Brutus Kael | 2 | 2 | 1 | 3 | 5 |
 | Renn Duskfall | 3 | 1 | 3 | 1 | 3 |
 
+### Agent portraits — ✅ plain files (drop-in)
+
+Put portrait images in `unity/Agentz/Assets/StreamingAssets/Portraits/`. They're loaded at
+runtime and matched to each agent by a **slug of its name** (lowercase; spaces → `_`;
+quotes/apostrophes dropped), e.g. `Sergeant Brutus Kael` → `sergeant_brutus_kael.png`.
+Formats: `.png` / `.jpg`. A missing file just means no portrait (nothing breaks); an
+Inspector-assigned portrait on the `AgentData` asset takes precedence. See that folder's
+`README.md` for the exact filename per agent.
+
 ---
 
 ## 3. Timers, rules & economy — ✅ plain text (JSON) or Unity

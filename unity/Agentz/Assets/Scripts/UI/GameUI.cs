@@ -116,7 +116,7 @@ public class GameUI : MonoBehaviour
         _assignPopup = apGo.AddComponent<AssignmentPopup>();
         _assignPopup.Build(_canvasRoot);
         _assignPopup.OnAssigned  += OnAssigned;
-        _assignPopup.OnCancelled += () => { _popupOpen = false; RefreshPause(); };
+        _assignPopup.OnCancelled += () => { _popupOpen = false; RefreshPause(); _roster.SetVisible(true); };
 
         // Result popup
         var rpGo = new GameObject("ResultPopup", typeof(RectTransform));
@@ -232,6 +232,7 @@ public class GameUI : MonoBehaviour
 
         _popupOpen = true;
         RefreshPause();
+        _roster.SetVisible(false); // redundant with the popup's own agent cards
         _assignPopup.Show(m, Agents);
     }
 
@@ -239,6 +240,7 @@ public class GameUI : MonoBehaviour
     {
         _popupOpen = false;
         RefreshPause();
+        _roster.SetVisible(true);
         MissionSpawner.Instance.AssignAgents(mission, agents);
         _roster.RefreshAll();
 

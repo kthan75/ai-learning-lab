@@ -131,6 +131,28 @@ public static class UIHelper
         return (bg, fillImg);
     }
 
+    /// <summary>An Image showing an agent portrait sprite (or a placeholder box if null).</summary>
+    public static Image Portrait(Transform parent, Sprite sprite, Vector2 pos, Vector2 size)
+    {
+        var go = new GameObject("Portrait", typeof(RectTransform), typeof(Image));
+        go.transform.SetParent(parent, false);
+        SetRect(go, pos, size);
+        var img = go.GetComponent<Image>();
+        img.raycastTarget = false;
+        SetPortrait(img, sprite, tinted: false);
+        return img;
+    }
+
+    /// <summary>Updates a portrait Image's sprite; grey-tints it when 'tinted' (e.g. deployed).</summary>
+    public static void SetPortrait(Image img, Sprite sprite, bool tinted)
+    {
+        img.sprite        = sprite;
+        img.preserveAspect = sprite != null;
+        img.color = sprite != null
+            ? (tinted ? new Color(0.55f, 0.55f, 0.55f) : Color.white)
+            : new Color(0.14f, 0.14f, 0.20f); // placeholder box when no portrait
+    }
+
     // ── RectTransform helpers ────────────────────────────────────────────────
     public static void SetRect(GameObject go, Vector2 anchoredPos, Vector2 size)
     {

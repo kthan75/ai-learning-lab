@@ -2,38 +2,38 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Bottom strip showing all 6 agents with availability state and skill values.
-/// Read-only in gameplay — selection happens inside AssignmentPopup.
+/// Bottom strip showing all 6 agents — portrait, mini spider chart, and deployment
+/// status. Read-only in gameplay (selection happens inside AssignmentPopup). Hidden
+/// while the assignment popup is open (see <see cref="SetVisible"/>).
 /// </summary>
 public class AgentRosterPanel : MonoBehaviour
 {
-    private AgentData[] _agents;
-    private Image[]     _cardBgs;
-    private Text[]      _nameLabels;
-    private Text[]      _skillLabels;
-    private Text[]      _statusLabels;
-
-    // Same amber as AssignmentPopup
-    private static readonly Color ColSkillValue = new Color(0.91f, 0.78f, 0.29f);
+    private AgentData[]   _agents;
+    private GameObject    _bgRoot;
+    private Image[]       _cardBgs;
+    private Text[]        _nameLabels;
+    private Text[]        _statusLabels;
+    private Image[]       _portraits;
+    private SpiderChart[] _charts;
 
     public void Build(Transform canvasRoot, AgentData[] agents)
     {
         _agents       = agents;
         _cardBgs      = new Image[agents.Length];
         _nameLabels   = new Text[agents.Length];
-        _skillLabels  = new Text[agents.Length];
         _statusLabels = new Text[agents.Length];
+        _portraits    = new Image[agents.Length];
+        _charts       = new SpiderChart[agents.Length];
 
-        // Taller strip to fit skills
-        var bg = UIHelper.PanelStretch(canvasRoot, "AgentRoster", UIHelper.BgCard);
-        UIHelper.AnchorBottomStretch(bg.GetComponent<RectTransform>(), height: 130);
+        _bgRoot = UIHelper.PanelStretch(canvasRoot, "AgentRoster", UIHelper.BgCard);
+        UIHelper.AnchorBottomStretch(_bgRoot.GetComponent<RectTransform>(), height: 190);
 
-        UIHelper.Label(bg.transform, "DEPLOYED\nAGENTS", 15, UIHelper.ColText,
-                       new Vector2(-860, 0), new Vector2(110, 130),
+        UIHelper.Label(_bgRoot.transform, "DEPLOYED\nAGENTS", 15, UIHelper.ColText,
+                       new Vector2(-845, 0), new Vector2(120, 160),
                        TextAnchor.MiddleCenter, FontStyle.Bold);
 
-        float cardW  = 220f;
-        float cardH  = 100f;
+        float cardW  = 235f;
+        float cardH  = 168f;
         float gap    = 10f;
         float totalW = agents.Length * cardW + (agents.Length - 1) * gap;
         float startX = -totalW / 2f + cardW / 2f;
@@ -42,28 +42,35 @@ public class AgentRosterPanel : MonoBehaviour
         {
             float x = startX + i * (cardW + gap);
 
-            var card = UIHelper.Panel(bg.transform, "Agent_" + i,
-                                      UIHelper.BgCard, new Vector2(x, -2), new Vector2(cardW, cardH));
+            var card = UIHelper.Panel(_bgRoot.transform, "Agent_" + i,
+                                      UIHelper.BgCard, new Vector2(x, 0), new Vector2(cardW, cardH));
             _cardBgs[i] = card.GetComponent<Image>();
             var ct = card.transform;
 
-            // Agent name — upper section
-            _nameLabels[i] = UIHelper.Label(ct, agents[i].agentName, 15, UIHelper.ColText,
-                                             new Vector2(0, 26), new Vector2(cardW - 12, 26),
-                                             TextAnchor.MiddleCenter, FontStyle.Bold);
+            // Name — top
+            _nameLabels[i] = UIHelper.Label(ct, agents[i].agentName, 13, UIHelper.ColText,
+                                            new Vector2(0, 68), new Vector2(cardW - 12, 22),
+                                            TextAnchor.MiddleCenter, FontStyle.Bold);
 
-            // Skill line — middle
-            _skillLabels[i] = UIHelper.Label(ct, "", 12, Color.white,
-                                              new Vector2(0, 0), new Vector2(cardW - 12, 22),
+            // Portrait (left) + mini chart (right)
+            _portraits[i] = UIHelper.Portrait(ct, agents[i].portrait,
+                                              new Vector2(-56, -4), new Vector2(88, 88));
+            _charts[i] = SpiderChart.Create(ct, new Vector2(48, -4), 92f,
+                                            ChartLabelMode.NamesAndValues, 9);
+
+            // Deployment status — bottom
+            _statusLabels[i] = UIHelper.Label(ct, "Available", 11, UIHelper.ColSuccess,
+                                              new Vector2(0, -70), new Vector2(cardW - 12, 18),
                                               TextAnchor.MiddleCenter);
-
-            // Status — bottom
-            _statusLabels[i] = UIHelper.Label(ct, "Available", 12, UIHelper.ColSuccess,
-                                               new Vector2(0, -24), new Vector2(cardW - 12, 20),
-                                               TextAnchor.MiddleCenter);
         }
 
         RefreshAll();
+    }
+
+    /// <summary>Show/hide the whole roster strip (hidden while the assign popup is open).</summary>
+    public void SetVisible(bool visible)
+    {
+        if (_bgRoot != null) _bgRoot.SetActive(visible);
     }
 
     public void RefreshAll()
@@ -76,18 +83,8 @@ public class AgentRosterPanel : MonoBehaviour
             _cardBgs[i].color    = avail ? UIHelper.BgCard : new Color(0.10f, 0.10f, 0.14f);
             _nameLabels[i].color = avail ? UIHelper.ColText : UIHelper.ColSubtext;
 
-            // Skill line with rich text coloring
-            var s = _agents[i].skills;
-            string busyGrey = "464646";
-            string valHex   = avail ? ColorUtility.ToHtmlStringRGB(ColSkillValue) : busyGrey;
-            string lblHex   = avail ? ColorUtility.ToHtmlStringRGB(UIHelper.ColSubtext) : busyGrey;
-
-            _skillLabels[i].text =
-                $"<color=#{lblHex}>ENG:</color><color=#{valHex}>{s.engineering:0}</color> " +
-                $"<color=#{lblHex}>DIP:</color><color=#{valHex}>{s.diplomacy:0}</color> " +
-                $"<color=#{lblHex}>NAV:</color><color=#{valHex}>{s.navigation:0}</color> " +
-                $"<color=#{lblHex}>SSM:</color><color=#{valHex}>{s.streetSmarts:0}</color> " +
-                $"<color=#{lblHex}>RES:</color><color=#{valHex}>{s.resilience:0}</color>";
+            UIHelper.SetPortrait(_portraits[i], _agents[i].portrait, tinted: !avail);
+            _charts[i].SetSingle(_agents[i].skills, dimmed: !avail);
 
             _statusLabels[i].text  = avail ? "Available" : "On Mission";
             _statusLabels[i].color = avail ? UIHelper.ColSuccess : UIHelper.ColWarn;
