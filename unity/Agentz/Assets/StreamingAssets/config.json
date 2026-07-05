@@ -1,0 +1,19 @@
+{
+    "skillCombineMode": 2,
+    "roundDuration": 45.0,
+    "failureLimit": 4,
+    "missionSpawnIntervalMin": 3.0,
+    "missionSpawnIntervalMax": 6.0,
+    "maxActiveMissions": 4,
+    "missionExpiryDuration": 15.0,
+    "missionBusyDuration": 7.0,
+    "baseGoldReward": 10,
+    "roundCompletionBonus": 25,
+    "streakBonusThreshold": 5,
+    "streakBonusGold": 5,
+    "skillScalePerRound": 1.100000023841858,
+    "spawnIntervalReductionPerRound": 0.10000000149011612,
+    "minSpawnInterval": 1.5,
+    "skillUpgradeCostBase": 15,
+    "skillUpgradeCostRamp": 5
+}
