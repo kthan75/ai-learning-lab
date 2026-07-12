@@ -12,8 +12,10 @@ screens (premise + how-to-play) and visual polish.
 ## Documentation
 - **[docs/GDD.md](docs/GDD.md)** — Game Design Document (design intent + how it's actually
   implemented, with drift notes). Start here.
+- **[docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md)** — milestone roadmap, per-milestone
+  breakdown, and what's next.
 - **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — code structure, boot sequence, data
-  flow, and where M2/M3 plug in.
+  flow, and where each milestone plugs in.
 - **[docs/EDITING_GUIDE.md](docs/EDITING_GUIDE.md)** — where every agent, mission, timer and
   balance value lives and how to edit it (plain-text vs. Unity).
 
