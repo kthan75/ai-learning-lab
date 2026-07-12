@@ -20,10 +20,13 @@ public class GameUI : MonoBehaviour
     private AssignmentPopup  _assignPopup;
     private ResultPopup      _resultPopup;
     private RoundOverPanel   _roundOver;
+    private IncapacitationManager _incap;
+    private IncapacitationPopup   _incapPopup;
 
     private Transform        _canvasRoot;
     private bool             _popupOpen;
     private bool             _resultOpen;
+    private bool             _incapOpen;
     private bool             _roundEndPending;
 
     // ── Layout constants ─────────────────────────────────────────────────────
@@ -109,6 +112,25 @@ public class GameUI : MonoBehaviour
         rosterGo.transform.SetParent(_canvasRoot, false);
         _roster = rosterGo.AddComponent<AgentRosterPanel>();
         _roster.Build(_canvasRoot, Agents);
+
+        // Incapacitation event popup
+        var ipGo = new GameObject("IncapacitationPopup", typeof(RectTransform));
+        ipGo.transform.SetParent(_canvasRoot, false);
+        _incapPopup = ipGo.AddComponent<IncapacitationPopup>();
+        _incapPopup.Build(_canvasRoot);
+        _incapPopup.OnDismissed += () => { _incapOpen = false; RefreshPause(); };
+
+        // Incapacitation manager — random idle-agent downtime
+        var incapGo = new GameObject("IncapacitationManager");
+        _incap = incapGo.AddComponent<IncapacitationManager>();
+        _incap.Initialize(Agents);
+        _incap.OnChanged += () => _roster.RefreshAll();
+        _incap.OnIncapacitated += agent =>
+        {
+            _incapOpen = true;
+            RefreshPause();
+            _incapPopup.Show(agent, agent.incapTimeRemaining);
+        };
 
         // Assignment popup
         var apGo = new GameObject("AssignmentPopup", typeof(RectTransform));
@@ -221,7 +243,7 @@ public class GameUI : MonoBehaviour
 
     private void RefreshPause()
     {
-        MissionSpawner.Instance.PauseMissions = _popupOpen || _resultOpen;
+        MissionSpawner.Instance.PauseMissions = _popupOpen || _resultOpen || _incapOpen;
     }
 
     private void OnMissionCardClicked(Mission m)

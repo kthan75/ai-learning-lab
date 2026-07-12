@@ -17,5 +17,10 @@ public class AgentData : ScriptableObject
     public SkillSet skills;
 
     // Runtime state — not serialized to asset; reset each game session.
-    [System.NonSerialized] public bool isAvailable = true;
+    [System.NonSerialized] public bool   isAvailable = true;
+
+    // Incapacitation (temporary, random) — isAvailable is set false while incapacitated.
+    [System.NonSerialized] public bool   isIncapacitated;
+    [System.NonSerialized] public float  incapTimeRemaining;
+    [System.NonSerialized] public string incapReason;
 }

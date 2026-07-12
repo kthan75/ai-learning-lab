@@ -101,8 +101,9 @@ public class GameManager : MonoBehaviour
         ConsecSuccesses = 0;
         OnFailureAdded?.Invoke(Failures);
 
-        // Only trigger game-over by failure limit while still in normal play
-        if (State == GameState.Playing && Failures >= Config.failureLimit)
+        // Hitting the failure limit is game-over whenever it happens — including during
+        // the Draining phase (busy missions finishing after the round timer expired).
+        if (State != GameState.RoundOver && Failures >= Config.failureLimit)
             EndRound(failure: true);
     }
 

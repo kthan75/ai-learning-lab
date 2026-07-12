@@ -206,7 +206,9 @@ public class AssignmentPopup : MonoBehaviour
         _agentBtnBgs[idx].color    = sel   ? UIHelper.AccentBlue
                                    : avail ? UIHelper.BgCard
                                            : UIHelper.ColDisabled;
-        _agentBtnLabels[idx].text  = _agents[idx].agentName;
+        _agentBtnLabels[idx].text  = _agents[idx].isIncapacitated
+            ? $"{_agents[idx].agentName}   <color=#{ColorUtility.ToHtmlStringRGB(UIHelper.ColFail)}>[Incapacitated]</color>"
+            : _agents[idx].agentName;
         _agentBtnLabels[idx].color = avail ? Color.white : UIHelper.ColSubtext;
         _agentBtns[idx].interactable = avail;
 

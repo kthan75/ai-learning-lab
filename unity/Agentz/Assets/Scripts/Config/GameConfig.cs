@@ -74,6 +74,25 @@ public class GameConfig : ScriptableObject
     [Tooltip("Maximum OII chance regardless of round.")]
     [Range(0f, 1f)] public float maxOccurrenceOII = 0.75f;
 
+    [Header("Random Events — Agent Incapacitation")]
+    [Tooltip("Enable random incapacitation of idle agents.")]
+    public bool enableIncapacitation = true;
+
+    [Tooltip("Seconds between incapacitation checks.")]
+    public float incapOccurrenceRate = 5f;
+
+    [Tooltip("Chance (0–1) per check that an idle agent is incapacitated.")]
+    [Range(0f, 1f)] public float incapOccurrenceChance = 0.20f;
+
+    [Tooltip("No incapacitations occur in the first N seconds of a round.")]
+    public float incapSafeTime = 10f;
+
+    [Tooltip("Minimum incapacitation duration (seconds).")]
+    public float incapDurationMin = 3f;
+
+    [Tooltip("Maximum incapacitation duration (seconds).")]
+    public float incapDurationMax = 7f;
+
     [Header("Upgrade Shop")]
     [Tooltip("Base gold cost to increase one skill point by 1.")]
     public int skillUpgradeCostBase = 15;

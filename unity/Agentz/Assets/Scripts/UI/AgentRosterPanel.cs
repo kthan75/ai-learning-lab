@@ -86,8 +86,28 @@ public class AgentRosterPanel : MonoBehaviour
             UIHelper.SetPortrait(_portraits[i], _agents[i].portrait, tinted: !avail);
             _charts[i].SetSingle(_agents[i].skills, dimmed: !avail);
 
-            _statusLabels[i].text  = avail ? "Available" : "On Mission";
-            _statusLabels[i].color = avail ? UIHelper.ColSuccess : UIHelper.ColWarn;
+            if (_agents[i].isIncapacitated)
+            {
+                _statusLabels[i].text  = IncapStatusText(_agents[i]);
+                _statusLabels[i].color = UIHelper.ColFail;
+            }
+            else
+            {
+                _statusLabels[i].text  = avail ? "Available" : "On Mission";
+                _statusLabels[i].color = avail ? UIHelper.ColSuccess : UIHelper.ColWarn;
+            }
         }
     }
+
+    // Live-update the incapacitation countdown (cheap: text only, no chart rebuilds).
+    private void Update()
+    {
+        if (_agents == null) return;
+        for (int i = 0; i < _agents.Length; i++)
+            if (_agents[i] != null && _agents[i].isIncapacitated)
+                _statusLabels[i].text = IncapStatusText(_agents[i]);
+    }
+
+    private static string IncapStatusText(AgentData a)
+        => $"{a.incapReason} ({Mathf.CeilToInt(Mathf.Max(0f, a.incapTimeRemaining))}s)";
 }
