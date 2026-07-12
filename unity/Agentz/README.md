@@ -5,7 +5,8 @@ on a chaotic space station, resolve them with a visible dice roll, and survive a
 rounds as you can. Built in **Unity (2D)**.
 
 **Status:** M1 + M2 complete — playable core loop plus skill-matching visuals (spider charts,
-agent portraits). Next up: **M3**, economy polish & the between-round upgrade screen.
+agent portraits). Next up: **M3** — random events (OII + agent incapacitation) plus economy &
+the between-round upgrade screen.
 
 ## Documentation
 - **[docs/GDD.md](docs/GDD.md)** — Game Design Document (design intent + how it's actually

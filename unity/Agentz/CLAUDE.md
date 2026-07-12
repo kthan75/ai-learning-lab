@@ -7,8 +7,8 @@ Guidance for AI sessions working on this project. Read the docs before making ch
 ## What this is
 A real-time dispatch game — assign 1–3 skill-differentiated agents to timed missions, resolve
 via overlap%→D100 roll, survive rounds. **M1 (core loop) and M2 (spider-chart visuals + agent
-portraits) are complete.** Next milestone is **M3: economy polish & the between-round upgrade
-screen.**
+portraits) are complete.** Next milestone is **M3: random events (OII + agent incapacitation,
+GDD §4.9) + economy & the between-round upgrade screen.**
 
 ## Working with the user
 - **Beginner to Unity.** Any manual Editor work (creating assets, setting Inspector fields,
@@ -59,9 +59,17 @@ screen.**
   `skillUpgradeCost*` fields are not read yet — don't assume they affect gameplay.
 
 ## Where the next milestone plugs in
-- **M3 (upgrade screen):** extend `RoundOverPanel`; spend `GameManager.Gold` to raise
+- **M3 — random events (GDD §4.9):** two systems, all knobs in `GameConfig` (→ `config.json`),
+  each with an `enable*` toggle. **OII** — roll per mission at spawn; when set, the assign
+  popup hides only the summary chart + Success % (show "Ops info incomplete…"), mini charts
+  stay. **Incapacitation** — after `incapSafeTime`, every `incapOccurrenceRate`s roll
+  `incapOccurrenceChance` to pull a random **idle** agent out for `Random(min,max)`s with a
+  random reason. Both pause with popups; skip Draining/RoundOver.
+- **M3 — upgrade screen:** extend `RoundOverPanel`; spend `GameManager.Gold` to raise
   `AgentData.skills`, priced via the (currently unused) `GameConfig.skillUpgradeCost*`. The
   `SpiderChart` widget can visualize an agent's stats on the upgrade page.
+- **M4 — intro screens + polish:** two dismiss-any-key screens (premise, how-to-play) at
+  launch before round 1; visual polish per the Appendix B image list.
 
 ## Gotchas
 - Editing a `Default*.cs` file changes *defaults/fallbacks*, not the scene assets already in

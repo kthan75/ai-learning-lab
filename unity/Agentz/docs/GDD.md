@@ -227,6 +227,36 @@ Whenever any popup is open (assignment or result), **all timers freeze** — mis
 busy countdowns, the spawn timer, and the round clock (`MissionSpawner.PauseMissions`). This
 keeps the real-time pressure fair: reading a result never costs you the round.
 
+### 4.9 Random events / run modifiers *(planned — M3)*
+Two random systems add variety and tension. Both **pause with popups** (reuse
+`PauseMissions`) and do not fire during Draining/RoundOver. All values below live in
+`GameConfig` (so they're editable in `config.json`); master toggles `enableOII` /
+`enableIncapacitation` (default on) gate each system.
+
+**Ops Info Incomplete (OII).** Some missions spawn with intel gaps: the assign popup can't
+show a success prediction. When a mission is OII, the popup **hides the team-vs-mission
+summary chart and the Success % only**, replacing them with the text *"Ops info incomplete.
+Success rate unknown."* Agent portraits and their per-agent mini charts stay visible — you
+still choose a team, you just gamble on the odds. The **result popup shows normally** (you
+learn the outcome after). OII is rolled **once per mission at spawn** and fixed for that
+mission.
+- `startingOccurrenceOII` (default **0.25**) — base chance a mission is OII.
+- `roundScalingOII` (default **0.05**) — added per round.
+- `maxOccurrenceOII` (default **0.75**) — cap.
+- Effective chance = `min(startingOccurrenceOII + roundScalingOII × (round−1), maxOccurrenceOII)`
+  (round 1 = 25%).
+
+**Agent incapacitation.** Idle agents can be temporarily pulled out of action for a flavor
+reason. **Only idle (available) agents are eligible** — an agent on a mission is never
+incapacitated. Incapacitated agents are unselectable in the assign popup and show their
+reason + remaining time on the roster card; they return automatically when the timer ends.
+- Reason (random, from a small code-defined list): *"Agent injured."*, *"Personal
+  emergency."*, *"Stuck doing paperwork."*
+- Duration: random in `[incapDurationMin, incapDurationMax]` (default **3–7 s**).
+- Cadence: after `incapSafeTime` (default **10 s**, no incapacitations in a round's opening),
+  every `incapOccurrenceRate` seconds (default **5 s**) roll `incapOccurrenceChance` (default
+  **20%**); on a hit, a random eligible agent is incapacitated.
+
 ---
 
 ## 5. Player Progression
@@ -255,15 +285,20 @@ ScreenSpace-Overlay Canvas. Visual polish and game-feel are the M4 focus.
   combined agents), success % chance, and the dice roll with its result.
 - **Upgrade screen:** opens after each round; click an agent portrait to open their page and
   spend gold to raise skills.
+- **Intro screens *(planned — M4)*:** on every launch, before the first round, two full-screen
+  screens shown in sequence — (1) a short, funny **premise** blurb, (2) a brief **how-to-play**
+  (text + images). Each is dismissed by **any key or mouse button**.
 
 **⚙️ Implemented in M1:** dispatch screen, mission cards with skill hints, assignment popup,
-result popups (numeric overlap % + roll), roster cards with a "deployed" label, and
-sequenced popups (results queue and pause the game).
+result popups (numeric overlap % + roll), roster cards with a "deployed" label, sequenced
+popups (results queue and pause the game), and the **round-over summary + next-round /
+restart** flow.
 **⚙️ Added in M2:** live spider charts in the assign popup (team vs. mission) and result
 popup (with win/loss overlap coloring); per-agent cards showing **portrait + mini chart** in
 both the assign popup and the roster; the roster hides while the assign popup is open.
 Agent **portraits** load from `StreamingAssets/Portraits/` (see EDITING_GUIDE).
-**⚠️ Not yet built:** the **upgrade screen** (M3).
+**⚠️ Not yet built:** OII + incapacitation random events and the **upgrade screen** (M3);
+intro screens + visual polish (M4).
 
 ---
 
@@ -289,11 +324,15 @@ optimization.
 | Milestone | Scope | Status |
 |-----------|-------|--------|
 | **M0** | Project scaffolding (ScriptableObjects, GameConfig, 6 AgentData, GameScene) | ✅ Done |
-| **M1** | Playable core loop — spawn, assign, resolve, multi-round, HUD | ✅ Done |
+| **M1** | Core loop — spawn, assign, resolve, multi-round, HUD, **round-over screen + next-round/restart** | ✅ Done |
 | **M2** | Spider/radar chart visuals + agent portraits (assign popup, result, roster) | ✅ Done |
-| **M3** | Economy polish & **between-round upgrade screen** | ⬜ Next |
-| **M4** | Layout polish, visual feedback, game feel | ⬜ Pending |
+| **M3** | **Random events** (OII + incapacitation, §4.9) **+ economy & between-round upgrade screen** | ⬜ Next |
+| **M4** | **Intro screens** (premise + how-to-play) + visual polish / game feel (see Appendix B image list) | ⬜ Pending |
 | **M5** | Content & balance pass | ⬜ Pending |
+
+> **Plan note (2026-07-12):** the round-over summary + next-round flow, originally listed under
+> M3, was actually delivered in M1 and is recorded there now. M3 was repurposed to add the
+> random-event systems alongside the economy/upgrade work.
 
 ---
 
@@ -328,3 +367,34 @@ See [EDITING_GUIDE.md](EDITING_GUIDE.md) for where to change each of these.
 | Skill combine mode | Max | `skillCombineMode` |
 | Streak threshold / bonus | 5 / +5 gold | `streakBonusThreshold` / `streakBonusGold` |
 | Skill scale per round | ×1.05 | `skillScalePerRound` |
+
+### Random events (M3 — §4.9)
+| Setting | Default | Field |
+|---------|---------|-------|
+| OII enabled | on | `enableOII` |
+| OII base chance | 25% | `startingOccurrenceOII` |
+| OII per-round scaling | +5% | `roundScalingOII` |
+| OII cap | 75% | `maxOccurrenceOII` |
+| Incapacitation enabled | on | `enableIncapacitation` |
+| Incap check interval | 5 s | `incapOccurrenceRate` |
+| Incap chance per check | 20% | `incapOccurrenceChance` |
+| Incap safe time (round start) | 10 s | `incapSafeTime` |
+| Incap duration range | 3–7 s | `incapDurationMin/Max` |
+
+---
+
+## Appendix B — M4 visual-polish asset list
+Images to generate for M4. Transparent PNG for icons/logo; 2560×1440 for backgrounds
+(covers QHD, scales down cleanly). Essentials first; *italic* = nice-to-have.
+
+| Asset | Description | Size |
+|-------|-------------|------|
+| Dispatch background | Sci-fi ops-center backdrop, dark/muted so UI stays readable | 2560×1440 |
+| Premise screen art | Evocative "chaotic space station" scene for the intro | 2560×1440 |
+| How-to-play panels ×3 | Illustrations: (1) missions appear, (2) pick agents, (3) dice/resolution | ~700×450 each |
+| Game logo | "Agentz" title treatment, transparent | ~1000×400 |
+| Skill icons ×5 | ENG / DIP / NAV / SSM / RES glyphs, transparent | 128×128 each |
+| Gold / credits icon | Currency symbol, transparent | 96×96 |
+| Success / Failure stamps | Stylized ✓ and ✗ for the result popup, transparent | 256×256 each |
+| *Mission-category icons ×~6* | Fire/repair, diplomacy, navigation, security, medical, generic | 128×128 each |
+| *Incap status icons ×3* | Injured / emergency / paperwork | 64×64 each |
