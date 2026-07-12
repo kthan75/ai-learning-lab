@@ -152,4 +152,12 @@ public class GameManager : MonoBehaviour
         float hi = Mathf.Max(Config.missionSpawnIntervalMax * (1f - reduction), Config.minSpawnInterval + 0.5f);
         return UnityEngine.Random.Range(lo, hi);
     }
+
+    /// <summary>Current chance (0..1) that a newly spawned mission is "Ops Info Incomplete".</summary>
+    public float GetOIIChance()
+    {
+        if (!Config.enableOII) return 0f;
+        return Mathf.Min(Config.startingOccurrenceOII + Config.roundScalingOII * (RoundNumber - 1),
+                         Config.maxOccurrenceOII);
+    }
 }

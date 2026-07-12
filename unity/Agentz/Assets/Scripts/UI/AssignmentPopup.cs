@@ -19,6 +19,7 @@ public class AssignmentPopup : MonoBehaviour
     private Image[]          _agentBtnBgs;
     private Text[]           _agentBtnLabels;
     private Text             _lblTitle, _lblDesc, _lblChance;
+    private Text             _lblSuccessHeader, _legendReq, _legendTeam, _lblOiiNotice;
     private SpiderChart[]    _agentCharts;
     private Image[]          _agentPortraits;
     private Button           _btnAssign;
@@ -105,17 +106,23 @@ public class AssignmentPopup : MonoBehaviour
         _spider = SpiderChart.Create(t, new Vector2(-430, -290), 210f);
 
         // ── Success chance + legend (right) ────────────────────────────────────
-        UIHelper.Label(t, "Success Chance:", 20, UIHelper.ColSubtext,
+        _lblSuccessHeader = UIHelper.Label(t, "Success Chance:", 20, UIHelper.ColSubtext,
                        new Vector2(180, -232), new Vector2(340, 30));
 
         _lblChance = UIHelper.Label(t, "—", 38, UIHelper.ColText,
                                     new Vector2(180, -292), new Vector2(340, 48),
                                     TextAnchor.MiddleCenter, FontStyle.Bold);
 
-        UIHelper.Label(t, "<color=#FFB840>■</color> Mission required", 15, UIHelper.ColSubtext,
+        _legendReq = UIHelper.Label(t, "<color=#FFB840>■</color> Mission required", 15, UIHelper.ColSubtext,
                        new Vector2(180, -344), new Vector2(360, 24));
-        UIHelper.Label(t, "<color=#7AB3FF>■</color> Your team", 15, UIHelper.ColSubtext,
+        _legendTeam = UIHelper.Label(t, "<color=#7AB3FF>■</color> Your team", 15, UIHelper.ColSubtext,
                        new Vector2(180, -370), new Vector2(360, 24));
+
+        // ── OII notice (shown instead of the success preview for OII missions) ──
+        _lblOiiNotice = UIHelper.Label(t, "Ops info incomplete.\nSuccess rate unknown.", 28,
+                                       UIHelper.ColWarn, new Vector2(0, -280), new Vector2(1100, 130),
+                                       TextAnchor.MiddleCenter, FontStyle.Bold);
+        _lblOiiNotice.gameObject.SetActive(false);
 
         // ── Buttons ───────────────────────────────────────────────────────────
         var btnCancel = UIHelper.Btn(t, "Cancel", new Vector2(-170, -440),
@@ -137,6 +144,8 @@ public class AssignmentPopup : MonoBehaviour
         _lblTitle.text = mission.Template.missionTitle;
         _lblDesc.text  = FormatDescription(mission.Template.description);
 
+        ApplyOiiVisibility(mission.OpsInfoIncomplete);
+
         for (int i = 0; i < agents.Length; i++)
             RefreshAgentBtn(i);
 
@@ -146,6 +155,20 @@ public class AssignmentPopup : MonoBehaviour
     }
 
     public void Hide() => _root.SetActive(false);
+
+    /// <summary>
+    /// For "Ops Info Incomplete" missions, hides the success preview (summary chart +
+    /// Success % + legend) and shows the notice instead. Agent cards are unaffected.
+    /// </summary>
+    private void ApplyOiiVisibility(bool oii)
+    {
+        _spider.gameObject.SetActive(!oii);
+        _lblSuccessHeader.gameObject.SetActive(!oii);
+        _lblChance.gameObject.SetActive(!oii);
+        _legendReq.gameObject.SetActive(!oii);
+        _legendTeam.gameObject.SetActive(!oii);
+        _lblOiiNotice.gameObject.SetActive(oii);
+    }
 
     /// <summary>
     /// Puts the trailing skill hint (e.g. "[DIP, RES]") on its own line so it always
@@ -193,8 +216,16 @@ public class AssignmentPopup : MonoBehaviour
 
     private void RefreshChance()
     {
-        var required = _mission.Template.requiredSkills;
         var selectedAgents = SelectedAgents();
+
+        // OII mission: no preview to compute — just gate Assign on having a team.
+        if (_mission.OpsInfoIncomplete)
+        {
+            _btnAssign.interactable = selectedAgents.Count > 0;
+            return;
+        }
+
+        var required = _mission.Template.requiredSkills;
         if (selectedAgents.Count == 0)
         {
             _lblChance.text  = "—";

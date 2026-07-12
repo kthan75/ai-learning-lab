@@ -61,6 +61,19 @@ public class GameConfig : ScriptableObject
     [Tooltip("Minimum allowed spawn interval regardless of difficulty scaling.")]
     public float minSpawnInterval = 1.5f;
 
+    [Header("Random Events — Ops Info Incomplete (OII)")]
+    [Tooltip("Enable OII: some missions spawn with no success-rate preview in the assign popup.")]
+    public bool enableOII = true;
+
+    [Tooltip("Base chance (0–1) that a mission is OII, at round 1.")]
+    [Range(0f, 1f)] public float startingOccurrenceOII = 0.25f;
+
+    [Tooltip("Added to the OII chance each round (cumulative).")]
+    [Range(0f, 1f)] public float roundScalingOII = 0.05f;
+
+    [Tooltip("Maximum OII chance regardless of round.")]
+    [Range(0f, 1f)] public float maxOccurrenceOII = 0.75f;
+
     [Header("Upgrade Shop")]
     [Tooltip("Base gold cost to increase one skill point by 1.")]
     public int skillUpgradeCostBase = 15;

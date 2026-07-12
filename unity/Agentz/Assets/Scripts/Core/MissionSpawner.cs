@@ -124,8 +124,9 @@ public class MissionSpawner : MonoBehaviour
         if (_pool == null || _pool.Length == 0) return;
 
         var template = _pool[UnityEngine.Random.Range(0, _pool.Length)];
+        bool oii     = UnityEngine.Random.value < GameManager.Instance.GetOIIChance();
         var mission  = new Mission(template, _config.missionExpiryDuration,
-                                  GameManager.Instance.GetDifficultyScale());
+                                  GameManager.Instance.GetDifficultyScale(), oii);
 
         mission.OnExpired  += () => HandleExpired(mission);
         mission.OnResolved += (ok, pct, roll) => HandleResolved(mission, ok, pct, roll);

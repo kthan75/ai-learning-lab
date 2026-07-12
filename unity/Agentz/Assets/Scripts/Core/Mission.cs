@@ -16,6 +16,7 @@ public class Mission
     public float           TimeRemaining   { get; private set; }   // while Waiting
     public float           BusyRemaining   { get; private set; }   // while Busy
     public float           MaxExpiry       { get; }
+    public bool            OpsInfoIncomplete { get; }              // no success preview when assigning
     public List<AgentData> AssignedAgents  { get; } = new List<AgentData>();
 
     // ── Resolution results (valid after Resolved) ────────────────────────────
@@ -33,13 +34,15 @@ public class Mission
     private readonly float _difficultyScale;
 
     // ────────────────────────────────────────────────────────────────────────
-    public Mission(MissionTemplate template, float expiryDuration, float difficultyScale)
+    public Mission(MissionTemplate template, float expiryDuration, float difficultyScale,
+                   bool opsInfoIncomplete = false)
     {
-        Template         = template;
-        TimeRemaining    = expiryDuration;
-        MaxExpiry        = expiryDuration;
-        _difficultyScale = difficultyScale;
-        State            = MissionState.Waiting;
+        Template          = template;
+        TimeRemaining     = expiryDuration;
+        MaxExpiry         = expiryDuration;
+        _difficultyScale  = difficultyScale;
+        OpsInfoIncomplete = opsInfoIncomplete;
+        State             = MissionState.Waiting;
     }
 
     /// <summary>Call once per frame from MissionSpawner.Update().</summary>
