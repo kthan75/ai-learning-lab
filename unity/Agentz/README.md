@@ -4,9 +4,10 @@ A fast-paced, real-time dispatch game: assign skill-differentiated agents to tim
 on a chaotic space station, resolve them with a visible dice roll, and survive as many
 rounds as you can. Built in **Unity (2D)**.
 
-**Status:** M1 + M2 complete — playable core loop plus skill-matching visuals (spider charts,
-agent portraits). Next up: **M3** — random events (OII + agent incapacitation) plus economy &
-the between-round upgrade screen.
+**Status:** M1 + M2 + M3 complete — playable core loop, skill-matching visuals (spider charts,
+agent portraits), random events (OII + agent incapacitation), and the economy / between-round
+upgrade screen (round & no-fails bonuses, persisted high score). Next up: **M4** — intro
+screens (premise + how-to-play) and visual polish.
 
 ## Documentation
 - **[docs/GDD.md](docs/GDD.md)** — Game Design Document (design intent + how it's actually

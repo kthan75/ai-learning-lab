@@ -76,10 +76,15 @@ See [EDITING_GUIDE.md](EDITING_GUIDE.md) for the editing workflow and the Editor
 ### Core — `Core/`
 - **`GameManager.cs`** *(singleton MonoBehaviour)* — the round state machine and scoreboard.
   - State: `Playing → Draining → RoundOver`. Owns the round timer, failures, gold, score,
-    round number, streak.
+    round number, streak, and the persisted **`HighScore`** (PlayerPrefs).
   - Events: `OnFailureAdded`, `OnGoldChanged`, `OnTimerTick`, `OnRoundEnd`.
   - Called by the spawner: `RegisterSuccess(gold)`, `RegisterFailure()`, `CompleteRound()`.
-  - Difficulty helpers: `GetDifficultyScale()`, `GetSpawnInterval()`.
+  - Economy: `TrySpendGold` / `RefundGold` (upgrades); on a survived round `EndRound` grants
+    `roundCompletionBonus` (+ `noFailBonus` if zero failures) and updates the high score.
+  - Difficulty / random-event helpers: `GetDifficultyScale()`, `GetSpawnInterval()`,
+    `GetOIIChance()`.
+  - **Game-over** fires when `Failures >= failureLimit` in *any* non-RoundOver state (so it
+    also triggers during Draining).
 - **`MissionSpawner.cs`** *(singleton MonoBehaviour)* — spawns and ticks missions.
   - Owns the active-mission list, spawn timer, and the `PauseMissions` flag.
   - Drives the *Draining* logic (clear Waiting without penalty, let Busy finish, then end
@@ -89,8 +94,16 @@ See [EDITING_GUIDE.md](EDITING_GUIDE.md) for the editing workflow and the Editor
 - **`Mission.cs`** *(plain C# class)* — one active mission.
   - State: `Waiting → Busy → Resolved`. `Tick(dt)` advances timers.
   - `Resolve()` combines assigned agents (per `GameConfig.skillCombineMode`), applies the
-    round difficulty scale to requirements, computes overlap, rolls D100, sets `WasSuccess`.
+    round difficulty scale to requirements, computes overlap, rolls D100, sets `WasSuccess`
+    (**roll high to win:** success = D100 > 100−match%). Exposes `CombinedSkills` /
+    `ScaledRequirement` for the result chart.
+  - `OpsInfoIncomplete` — rolled once at spawn (`GetOIIChance`); hides the success preview.
   - Events: `OnExpired`, `OnResolved(success, overlap, roll)`, `OnStateChanged`.
+- **`IncapacitationManager.cs`** *(MonoBehaviour, M3)* — random idle-agent downtime. After the
+  round's safe window, periodically rolls to pull a random **idle** agent out for a random
+  duration/reason; ticks + auto-releases; pauses with popups; clears each round.
+  `[DefaultExecutionOrder(100)]` so it can't stack popups. Events: `OnChanged` (roster
+  refresh), `OnIncapacitated(agent)` (event popup).
 
 ### UI — `UI/` (all runtime-built)
 - **`GameUI.cs`** — top-level UI controller; builds the Canvas, owns child panels, sets
@@ -109,7 +122,13 @@ See [EDITING_GUIDE.md](EDITING_GUIDE.md) for the editing workflow and the Editor
   team-vs-mission summary chart + success % + Assign button.
 - **`ResultPopup.cs`** — resolution result: skill match %, result spider chart (outcome
   coloring), dice roll, agents.
-- **`RoundOverPanel.cs`** — end-of-round summary; next round / restart.
+- **`IncapacitationPopup.cs`** *(M3)* — modal event popup (portrait + name + reason +
+  duration) shown when an agent is incapacitated; pauses the game until OK.
+- **`RoundOverPanel.cs`** — end-of-round summary with itemized bonuses (round + no-fails) and
+  the persisted high score. Success → **"Upgrade Agents"** (`OnUpgrade` → opens `UpgradePanel`);
+  failure → **"Play Again"** (`OnRestart`).
+- **`UpgradePanel.cs`** *(M3)* — between-round flat grid of agents; spend gold to raise skills
+  (`+`) with an undo (`−`) refunding back to the round-start level. "Next Round" continues.
 - **`UIHelper.cs`** — shared factory helpers (panels, labels, buttons, **portraits**) for
   building UI elements in code.
 
@@ -140,17 +159,19 @@ Mission.Tick() counts down busy → Mission.Resolve()
         → OnMissionResolved ──► GameUI shows ResultPopup (PauseMissions = true)
 ```
 
-## Where M2 / M3 plug in
+## Where M2 / M3 / M4 plug in
 - **M2 (spider chart + portraits):** ✅ done. `SpiderChart` renders the overlaps; `Mission`
   exposes `CombinedSkills` + `ScaledRequirement` for the truthful result chart; `PortraitLoader`
-  fills `AgentData.portrait` at boot. See the UI section above.
-- **M3 (upgrade screen):** `RoundOverPanel` → new upgrade UI that spends `GameManager.Gold`
-  to raise `AgentData.skills`, priced via `GameConfig.skillUpgradeCost*` (currently unused).
+  fills `AgentData.portrait` at boot.
+- **M3 (random events + economy/upgrade):** ✅ done. `IncapacitationManager` + `OpsInfoIncomplete`;
+  `UpgradePanel` spends `GameManager.TrySpendGold` to raise `AgentData.skills`; round/no-fails
+  bonuses + persisted high score. GameUI snapshots base skills to reset upgrades on Play Again.
+- **M4 (intro screens + polish):** two dismiss-any-key screens (premise, how-to-play) at launch
+  before round 1; visual polish per GDD Appendix B. Not started.
 
 ## Known loose ends
-- `GameConfig.baseGoldReward` and `roundCompletionBonus` are defined but **not read** by any
-  system yet (see GDD §4.5). The end-of-round bonus is currently a hard-coded `RoundNumber ×
-  100` added to **Score**.
+- `GameConfig.baseGoldReward` is defined but **not read** by any system (missions use their own
+  reward). Remove or repurpose. (`roundCompletionBonus` is now wired — see GDD §4.5.)
 - Missions, agents, and `GameConfig` are now all externally editable in plain text (CSV / CSV
   / JSON). Precedence differs slightly: agents/config = *text file wins if present*; missions
   = *Inspector pool wins if assigned, so leave it empty to use the CSV*. See

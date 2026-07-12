@@ -1,7 +1,8 @@
 # Agentz — Game Design Document
 
 **Version:** 1.3 (expanded from v1.2)
-**Status:** M1 + M2 complete (core loop + skill-matching visuals). M3–M5 pending.
+**Status:** M1 + M2 + M3 complete (core loop, skill-matching visuals, random events +
+economy/upgrade screen). M4–M5 pending.
 **Engine:** Unity 2D · **Platform:** PC (MVP), mobile later · **Team:** Solo (+ AI coding)
 
 > This document is the living design spec. It began as `Agentz_GDD_v1.2.docx` and has
@@ -87,9 +88,9 @@ failure limit during *Playing*.
 - Player upgrades agents by spending gold on specific skill values.
 - No XP system in MVP (planned later).
 
-**⚠️ Design drift / not yet built:** the between-round **upgrade screen is not
-implemented** (planned for M3). `GameConfig` already carries the upgrade-cost knobs
-(`skillUpgradeCostBase`, `skillUpgradeCostRamp`) but nothing consumes them yet.
+**⚙️ Implemented (M3):** the between-round **upgrade screen** is built (see §5). After a
+survived round, the Round Complete panel's "Upgrade Agents" button opens a flat grid where
+gold is spent to raise agent skills; "Next Round" then continues the run.
 
 ### 3.4 Retention driver
 - Endless survival structure.
@@ -186,12 +187,16 @@ phase do **not** count as failures (the round is already ending).
 - Each success awards that mission's own `goldReward` (from the CSV / template).
 - Once `ConsecSuccesses >= streakBonusThreshold` (default 5), each further success adds
   `streakBonusGold` (default +5). A failure resets the streak.
+- **Surviving a round** grants `roundCompletionBonus` gold (default **+25**), plus a
+  **no-fails bonus** `noFailBonus` (default **+25**) if the round had **zero** failures.
+  The Round Complete panel itemizes both above the gold total *(added M3)*.
 - Gold is tracked both **per round** and **cumulative total** (HUD shows both as "R/T").
+  Upgrades spend from the cumulative total (`GameManager.TrySpendGold` / `RefundGold`).
+- **High score:** the best run `TotalScore` is persisted via `PlayerPrefs` and shown on the
+  round-over panel *(added M3)*.
 
-**⚠️ Defined but not yet wired:** `baseGoldReward` and `roundCompletionBonus` exist in
-`GameConfig` but nothing reads them yet (missions use their own reward, and the end-of-round
-bonus currently applies to **Score**, as `RoundNumber × 100`, not to gold). Decide during
-M3 whether to wire these up or remove them.
+**⚠️ Still unused:** `baseGoldReward` remains defined but unread (missions use their own
+reward). Remove or repurpose in a later pass.
 
 ### 4.6 Agent system (MVP)
 - Fixed roster of **6** agents.
@@ -227,7 +232,7 @@ Whenever any popup is open (assignment or result), **all timers freeze** — mis
 busy countdowns, the spawn timer, and the round clock (`MissionSpawner.PauseMissions`). This
 keeps the real-time pressure fair: reading a result never costs you the round.
 
-### 4.9 Random events / run modifiers *(planned — M3)*
+### 4.9 Random events / run modifiers *(implemented — M3)*
 Two random systems add variety and tension. Both **pause with popups** (reuse
 `PauseMissions`) and do not fire during Draining/RoundOver. All values below live in
 `GameConfig` (so they're editable in `config.json`); master toggles `enableOII` /
@@ -248,13 +253,15 @@ mission.
 
 **Agent incapacitation.** Idle agents can be temporarily pulled out of action for a flavor
 reason. **Only idle (available) agents are eligible** — an agent on a mission is never
-incapacitated. Incapacitated agents are unselectable in the assign popup and show their
-reason + remaining time on the roster card; they return automatically when the timer ends.
+incapacitated. When it fires, a **modal event popup** shows the agent's portrait, name,
+reason, and duration (OK returns to the dispatch screen). On the roster the agent dims and
+shows their reason + a live countdown; in the assign popup they're tagged **"[Incapacitated]"**
+next to their name and can't be selected. They return automatically when the timer ends.
 - Reason (random, from a small code-defined list): *"Agent injured."*, *"Personal
   emergency."*, *"Stuck doing paperwork."*
 - Duration: random in `[incapDurationMin, incapDurationMax]` (default **3–7 s**).
 - Cadence: after `incapSafeTime` (default **10 s**, no incapacitations in a round's opening),
-  every `incapOccurrenceRate` seconds (default **5 s**) roll `incapOccurrenceChance` (default
+  every `incapOccurrenceRate` seconds (default **3 s**) roll `incapOccurrenceChance` (default
   **20%**); on a hit, a random eligible agent is incapacitated.
 
 ---
@@ -263,7 +270,13 @@ reason + remaining time on the roster card; they return automatically when the t
 - Upgrade agent stats with gold; optimize distributions; survive longer runs.
 - **Future:** XP, leveling, unlockable agents, meta progression.
 
-*(Upgrade UI is M3 — see §3.3.)*
+**⚙️ Implemented as (M3) — upgrade screen:** a flat grid of all 6 agents (portrait + name +
+5 skill rows). Each row shows `Lv N`, the cost, and a `+` button; clicking `+` also reveals a
+`−` **undo** button that refunds the gold and steps back down — but only to the level the
+agent had at round start (this session's floor). Cost to raise a skill from level L → L+1 is
+`skillUpgradeCostBase + L × skillUpgradeCostRamp` (default **15 + L×5**), capped at 10.
+Purchases persist across rounds within a run; **Play Again resets** agents to their base
+skills (snapshot taken at boot) and gold to 0.
 
 ---
 
@@ -297,8 +310,11 @@ restart** flow.
 popup (with win/loss overlap coloring); per-agent cards showing **portrait + mini chart** in
 both the assign popup and the roster; the roster hides while the assign popup is open.
 Agent **portraits** load from `StreamingAssets/Portraits/` (see EDITING_GUIDE).
-**⚠️ Not yet built:** OII + incapacitation random events and the **upgrade screen** (M3);
-intro screens + visual polish (M4).
+**⚙️ Added in M3:** OII + incapacitation random events (§4.9, incapacitation shows a modal
+event popup); the **upgrade screen** (§5) reached from the Round Complete panel; itemized
+round/no-fails bonuses and a persisted **high score** on the round-over panel; Game Over
+correctly triggers on hitting the failure limit (incl. during Draining).
+**⚠️ Not yet built:** intro screens (premise + how-to-play) + visual polish (M4).
 
 ---
 
@@ -326,8 +342,8 @@ optimization.
 | **M0** | Project scaffolding (ScriptableObjects, GameConfig, 6 AgentData, GameScene) | ✅ Done |
 | **M1** | Core loop — spawn, assign, resolve, multi-round, HUD, **round-over screen + next-round/restart** | ✅ Done |
 | **M2** | Spider/radar chart visuals + agent portraits (assign popup, result, roster) | ✅ Done |
-| **M3** | **Random events** (OII + incapacitation, §4.9) **+ economy & between-round upgrade screen** | ⬜ Next |
-| **M4** | **Intro screens** (premise + how-to-play) + visual polish / game feel (see Appendix B image list) | ⬜ Pending |
+| **M3** | Random events (OII + incapacitation, §4.9) + economy (round/no-fails bonus, high score) & upgrade screen | ✅ Done |
+| **M4** | **Intro screens** (premise + how-to-play) + visual polish / game feel (see Appendix B image list) | ⬜ Next |
 | **M5** | Content & balance pass | ⬜ Pending |
 
 > **Plan note (2026-07-12):** the round-over summary + next-round flow, originally listed under
@@ -376,10 +392,19 @@ See [EDITING_GUIDE.md](EDITING_GUIDE.md) for where to change each of these.
 | OII per-round scaling | +5% | `roundScalingOII` |
 | OII cap | 75% | `maxOccurrenceOII` |
 | Incapacitation enabled | on | `enableIncapacitation` |
-| Incap check interval | 5 s | `incapOccurrenceRate` |
+| Incap check interval | 3 s | `incapOccurrenceRate` |
 | Incap chance per check | 20% | `incapOccurrenceChance` |
 | Incap safe time (round start) | 10 s | `incapSafeTime` |
 | Incap duration range | 3–7 s | `incapDurationMin/Max` |
+
+### Economy & upgrades (M3)
+| Setting | Default | Field |
+|---------|---------|-------|
+| Round-completion bonus | +25 g | `roundCompletionBonus` |
+| No-fails bonus | +25 g | `noFailBonus` |
+| Skill upgrade base cost | 15 g | `skillUpgradeCostBase` |
+| Skill upgrade cost ramp | +5 g / level | `skillUpgradeCostRamp` |
+| High score | persisted via `PlayerPrefs` (key `Agentz.HighScore`) | — |
 
 ---
 

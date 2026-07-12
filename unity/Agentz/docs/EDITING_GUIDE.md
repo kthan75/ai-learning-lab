@@ -165,19 +165,31 @@ or the asset.
 | Skill combine mode | `skillCombineMode` | Max | How team skills combine: Average / Additive / Max |
 | **Economy** | | | |
 | Base gold reward | `baseGoldReward` | 10 | ⚠️ defined but **not currently used** |
-| Round completion bonus | `roundCompletionBonus` | 25 | ⚠️ defined but **not currently used** |
+| Round completion bonus | `roundCompletionBonus` | 25 | Gold for surviving a round |
+| No-fails bonus | `noFailBonus` | 25 | Extra gold for a round with zero failures |
 | Streak threshold | `streakBonusThreshold` | 5 | Consecutive successes before bonus kicks in |
 | Streak bonus gold | `streakBonusGold` | 5 | Extra gold per success past the threshold |
 | **Difficulty scaling** | | | |
 | Skill scale / round | `skillScalePerRound` | 1.05 | Requirements ×= this each round (cumulative) |
 | Spawn reduction / round | `spawnIntervalReductionPerRound` | 0.03 | Spawn gap shrinks by this fraction per round |
 | Min spawn interval | `minSpawnInterval` | 1.5 | Floor for the shrinking spawn gap |
-| **Upgrade shop (M3, unbuilt)** | | | |
-| Skill upgrade base cost | `skillUpgradeCostBase` | 15 | ⚠️ future — no upgrade UI yet |
-| Skill upgrade cost ramp | `skillUpgradeCostRamp` | 5 | ⚠️ future — no upgrade UI yet |
+| **Random events — OII** | | | |
+| OII enabled | `enableOII` | true | Missions can spawn with no success preview |
+| OII base chance | `startingOccurrenceOII` | 0.25 | Chance a round-1 mission is OII |
+| OII per-round scaling | `roundScalingOII` | 0.05 | Added to the chance each round |
+| OII cap | `maxOccurrenceOII` | 0.75 | Max OII chance |
+| **Random events — incapacitation** | | | |
+| Incap enabled | `enableIncapacitation` | true | Random idle-agent downtime |
+| Incap check interval (s) | `incapOccurrenceRate` | 3 | Seconds between checks |
+| Incap chance / check | `incapOccurrenceChance` | 0.20 | Chance per check |
+| Incap safe time (s) | `incapSafeTime` | 10 | No incapacitations in a round's first N seconds |
+| Incap duration (s) | `incapDurationMin` / `incapDurationMax` | 3 / 7 | Random out-of-action range |
+| **Upgrade shop** | | | |
+| Skill upgrade base cost | `skillUpgradeCostBase` | 15 | Cost to raise a skill from Lv 0 → 1 |
+| Skill upgrade cost ramp | `skillUpgradeCostRamp` | 5 | Added per current level (cost = base + Lv×ramp) |
 
-> Fields marked ⚠️ exist in the config but nothing reads them yet — changing them has no
-> effect today. See GDD §4.5.
+> Only `baseGoldReward` is still unused. The high score is stored separately in `PlayerPrefs`
+> (key `Agentz.HighScore`), not in `GameConfig`.
 
 ### Skill combine mode — the one that changes feel most
 `skillCombineMode` decides how a multi-agent team's skills combine per axis:

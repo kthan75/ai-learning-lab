@@ -6,9 +6,10 @@ Guidance for AI sessions working on this project. Read the docs before making ch
 
 ## What this is
 A real-time dispatch game — assign 1–3 skill-differentiated agents to timed missions, resolve
-via overlap%→D100 roll, survive rounds. **M1 (core loop) and M2 (spider-chart visuals + agent
-portraits) are complete.** Next milestone is **M3: random events (OII + agent incapacitation,
-GDD §4.9) + economy & the between-round upgrade screen.**
+via overlap%→D100 roll, survive rounds. **M1, M2, and M3 are complete** — core loop,
+spider-chart visuals + portraits, random events (OII + incapacitation), and the economy /
+upgrade screen (round & no-fails bonuses, persisted high score). Next milestone is **M4:
+intro screens (premise + how-to-play) + visual polish** (GDD Appendix B image list).
 
 ## Working with the user
 - **Beginner to Unity.** Any manual Editor work (creating assets, setting Inspector fields,
@@ -58,18 +59,19 @@ GDD §4.9) + economy & the between-round upgrade screen.**
 - **Defined-but-unused config:** `baseGoldReward`, `roundCompletionBonus`, and the
   `skillUpgradeCost*` fields are not read yet — don't assume they affect gameplay.
 
+## M3 (done) — key facts for future changes
+- **Random events** (GDD §4.9): `OpsInfoIncomplete` rolled per mission at spawn (hides the
+  assign popup's summary chart + Success % only); `IncapacitationManager` pulls random **idle**
+  agents out (event popup + roster countdown). All knobs in `GameConfig`/`config.json`, each
+  with an `enable*` toggle; both pause with popups and skip Draining/RoundOver.
+- **Economy/upgrade:** `RoundOverPanel` success → `UpgradePanel` (spend `GameManager.TrySpendGold`
+  to raise `AgentData.skills`, `−` undo via `RefundGold`). Round + no-fails bonuses in
+  `EndRound`; high score persisted in `PlayerPrefs`. GameUI snapshots base skills to reset on
+  Play Again.
+
 ## Where the next milestone plugs in
-- **M3 — random events (GDD §4.9):** two systems, all knobs in `GameConfig` (→ `config.json`),
-  each with an `enable*` toggle. **OII** — roll per mission at spawn; when set, the assign
-  popup hides only the summary chart + Success % (show "Ops info incomplete…"), mini charts
-  stay. **Incapacitation** — after `incapSafeTime`, every `incapOccurrenceRate`s roll
-  `incapOccurrenceChance` to pull a random **idle** agent out for `Random(min,max)`s with a
-  random reason. Both pause with popups; skip Draining/RoundOver.
-- **M3 — upgrade screen:** extend `RoundOverPanel`; spend `GameManager.Gold` to raise
-  `AgentData.skills`, priced via the (currently unused) `GameConfig.skillUpgradeCost*`. The
-  `SpiderChart` widget can visualize an agent's stats on the upgrade page.
 - **M4 — intro screens + polish:** two dismiss-any-key screens (premise, how-to-play) at
-  launch before round 1; visual polish per the Appendix B image list.
+  launch before round 1; visual polish per the GDD Appendix B image list. Not started.
 
 ## Gotchas
 - Editing a `Default*.cs` file changes *defaults/fallbacks*, not the scene assets already in
