@@ -20,8 +20,11 @@ public class GameUI : MonoBehaviour
     private AssignmentPopup  _assignPopup;
     private ResultPopup      _resultPopup;
     private RoundOverPanel   _roundOver;
+    private UpgradePanel     _upgrade;
     private IncapacitationManager _incap;
     private IncapacitationPopup   _incapPopup;
+
+    private SkillSet[]       _baseSkills; // snapshot for resetting upgrades on a new run
 
     private Transform        _canvasRoot;
     private bool             _popupOpen;
@@ -36,6 +39,12 @@ public class GameUI : MonoBehaviour
     public void Initialize(AgentData[] agents)
     {
         Agents = agents;
+
+        // Snapshot base skills so upgrades can be reset when a run ends (Play Again).
+        _baseSkills = new SkillSet[agents.Length];
+        for (int i = 0; i < agents.Length; i++)
+            if (agents[i] != null) _baseSkills[i] = agents[i].skills;
+
         BuildCanvas();
         BuildMissionBoard();
         BuildSubPanels();
@@ -156,14 +165,21 @@ public class GameUI : MonoBehaviour
             }
         };
 
+        // Upgrade screen (between rounds)
+        var upGo = new GameObject("UpgradePanel", typeof(RectTransform));
+        upGo.transform.SetParent(_canvasRoot, false);
+        _upgrade = upGo.AddComponent<UpgradePanel>();
+        _upgrade.Build(_canvasRoot, Agents);
+        _upgrade.OnNextRound += OnNextRound;
+
         // Round over panel
         var roGo = new GameObject("RoundOverPanel", typeof(RectTransform));
         roGo.transform.SetParent(_canvasRoot, false);
         _roundOver = roGo.AddComponent<RoundOverPanel>();
         _roundOver.Build(_canvasRoot);
-        _roundOver.OnNextRound += OnNextRound;
-        _roundOver.OnRestart   += OnRestart;
-        _roundOver.OnQuit      += () => Application.Quit();
+        _roundOver.OnUpgrade += () => { _roundOver.Hide(); _upgrade.Show(); }; // success → upgrade screen
+        _roundOver.OnRestart += OnRestart;
+        _roundOver.OnQuit    += () => Application.Quit();
     }
 
     // ── Event wiring ─────────────────────────────────────────────────────────
@@ -274,6 +290,7 @@ public class GameUI : MonoBehaviour
     private void OnNextRound()
     {
         _roundOver.Hide();
+        _upgrade.Hide();
         _roundEndPending = false;
         _resultOpen = false;
         _missionToSlot.Clear();
@@ -289,11 +306,20 @@ public class GameUI : MonoBehaviour
     private void OnRestart()
     {
         _roundOver.Hide();
+        _upgrade.Hide();
         _roundEndPending = false;
         _resultOpen = false;
         _missionToSlot.Clear();
         foreach (var s in _slots) s.Clear();
-        foreach (var a in Agents) if (a != null) a.isAvailable = true;
+
+        // Fresh run: reset agents to base skills and availability.
+        for (int i = 0; i < Agents.Length; i++)
+        {
+            if (Agents[i] == null) continue;
+            Agents[i].skills      = _baseSkills[i];
+            Agents[i].isAvailable = true;
+        }
+
         GameManager.Instance.RestartGame();
         _roster.RefreshAll();
         _hud.Refresh(GameManager.Instance.Config.roundDuration,

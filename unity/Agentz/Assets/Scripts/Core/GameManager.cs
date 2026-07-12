@@ -19,7 +19,8 @@ public class GameManager : MonoBehaviour
     public int        Gold               { get; private set; }  // this round
     public int        TotalGold          { get; private set; }  // all rounds
     public int        Score              { get; private set; }  // this round
-    public int        TotalScore         { get; private set; }  // all rounds
+    public int        TotalScore         { get; private set; }  // all rounds (this run)
+    public int        HighScore          { get; private set; }  // best run ever (persisted)
     public int        RoundNumber        { get; private set; } = 1;
     public int        MissionsCompleted  { get; private set; }
     public float      RoundTimeRemaining { get; private set; }
@@ -32,10 +33,13 @@ public class GameManager : MonoBehaviour
     public event Action        OnRoundEnd;
 
     // ────────────────────────────────────────────────────────────────────────
+    private const string HighScoreKey = "Agentz.HighScore";
+
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+        HighScore = PlayerPrefs.GetInt(HighScoreKey, 0);
     }
 
     public void Initialize(GameConfig config)
@@ -116,10 +120,45 @@ public class GameManager : MonoBehaviour
         if (State == GameState.RoundOver) return;
         RoundWasFailure = failure;
         State       = GameState.RoundOver;
+
+        // Surviving a round grants gold bonuses (upgrade budget).
+        if (!failure)
+        {
+            int reward = Config.roundCompletionBonus;
+            if (Failures == 0) reward += Config.noFailBonus; // flawless-round bonus
+            Gold      += reward;
+            TotalGold += reward;
+        }
+
         int bonus   = RoundNumber * 100;
         Score      += bonus;
         TotalScore += bonus;
+
+        if (TotalScore > HighScore)
+        {
+            HighScore = TotalScore;
+            PlayerPrefs.SetInt(HighScoreKey, HighScore);
+            PlayerPrefs.Save();
+        }
+
         OnRoundEnd?.Invoke();
+    }
+
+    /// <summary>Spends from the cumulative gold pool (upgrades). Returns false if unaffordable.</summary>
+    public bool TrySpendGold(int amount)
+    {
+        if (amount <= 0 || TotalGold < amount) return false;
+        TotalGold -= amount;
+        OnGoldChanged?.Invoke(Gold);
+        return true;
+    }
+
+    /// <summary>Refunds gold to the cumulative pool (undoing an upgrade purchase).</summary>
+    public void RefundGold(int amount)
+    {
+        if (amount <= 0) return;
+        TotalGold += amount;
+        OnGoldChanged?.Invoke(Gold);
     }
 
     public void StartNextRound()

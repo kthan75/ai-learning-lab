@@ -43,6 +43,9 @@ public class GameConfig : ScriptableObject
     [Tooltip("Bonus gold for completing a round without hitting the failure limit.")]
     public int roundCompletionBonus = 25;
 
+    [Tooltip("Extra bonus gold for completing a round with zero failures.")]
+    public int noFailBonus = 25;
+
     [Tooltip("Bonus gold multiplier applied after this many consecutive successes.")]
     public int streakBonusThreshold = 5;
 
@@ -79,7 +82,7 @@ public class GameConfig : ScriptableObject
     public bool enableIncapacitation = true;
 
     [Tooltip("Seconds between incapacitation checks.")]
-    public float incapOccurrenceRate = 5f;
+    public float incapOccurrenceRate = 3f;
 
     [Tooltip("Chance (0–1) per check that an idle agent is incapacitated.")]
     [Range(0f, 1f)] public float incapOccurrenceChance = 0.20f;

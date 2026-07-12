@@ -14,6 +14,16 @@
     "skillScalePerRound": 1.100000023841858,
     "spawnIntervalReductionPerRound": 0.10000000149011612,
     "minSpawnInterval": 1.5,
+    "enableOII": true,
+    "startingOccurrenceOII": 0.25,
+    "roundScalingOII": 0.05000000074505806,
+    "maxOccurrenceOII": 0.75,
+    "enableIncapacitation": true,
+    "incapOccurrenceRate": 3.0,
+    "incapOccurrenceChance": 0.20000000298023225,
+    "incapSafeTime": 10.0,
+    "incapDurationMin": 3.0,
+    "incapDurationMax": 7.0,
     "skillUpgradeCostBase": 15,
     "skillUpgradeCostRamp": 5
 }

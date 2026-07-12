@@ -4,16 +4,16 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Full-screen overlay shown when a round ends.
-/// Success: shows "ROUND COMPLETE" with Next Round + Quit.
+/// Success: shows "ROUND COMPLETE" with Upgrade Agents (→ upgrade screen) + Quit.
 /// Failure: shows "GAME OVER" with Play Again + Quit.
 /// </summary>
 public class RoundOverPanel : MonoBehaviour
 {
-    public event Action OnNextRound;
-    public event Action OnRestart;
+    public event Action OnUpgrade;   // success → open the upgrade screen
+    public event Action OnRestart;   // failure → play again from round 1
     public event Action OnQuit;
 
-    private Text       _lblHeader, _lblRound, _lblMissions, _lblGold, _lblScore;
+    private Text       _lblHeader, _lblRound, _lblMissions, _lblRoundBonus, _lblNoFailBonus, _lblGold, _lblScore, _lblHighScore;
     private Button     _btnPrimary;
     private Text       _btnPrimaryLabel;
     private GameObject _root;
@@ -26,33 +26,39 @@ public class RoundOverPanel : MonoBehaviour
         _root.SetActive(false);
 
         var card = UIHelper.Panel(_root.transform, "Card",
-                                  UIHelper.BgPopup, Vector2.zero, new Vector2(520, 440));
+                                  UIHelper.BgPopup, Vector2.zero, new Vector2(520, 500));
         var t = card.transform;
 
-        _lblHeader = UIHelper.Label(t, "ROUND COMPLETE", 42, UIHelper.ColSuccess,
-                                    new Vector2(0, 165), new Vector2(480, 60),
+        _lblHeader = UIHelper.Label(t, "ROUND COMPLETE", 40, UIHelper.ColSuccess,
+                                    new Vector2(0, 205), new Vector2(480, 56),
                                     TextAnchor.MiddleCenter, FontStyle.Bold);
 
-        UIHelper.Panel(t, "Div", UIHelper.AccentBlue, new Vector2(0, 125), new Vector2(460, 2));
+        UIHelper.Panel(t, "Div", UIHelper.AccentBlue, new Vector2(0, 165), new Vector2(460, 2));
 
-        _lblRound    = UIHelper.Label(t, "Round reached: 1",      22, UIHelper.ColText,
-                                      new Vector2(0, 78), new Vector2(460, 34));
-        _lblMissions = UIHelper.Label(t, "Missions completed: 0", 22, UIHelper.ColText,
-                                      new Vector2(0, 38), new Vector2(460, 34));
-        _lblGold     = UIHelper.Label(t, "Gold earned: 0",        22, UIHelper.ColWarn,
-                                      new Vector2(0, -2), new Vector2(460, 34));
-        _lblScore    = UIHelper.Label(t, "Score: 0",              30, UIHelper.ColText,
-                                      new Vector2(0, -50), new Vector2(460, 40),
-                                      TextAnchor.MiddleCenter, FontStyle.Bold);
+        _lblRound       = UIHelper.Label(t, "Round reached: 1",      21, UIHelper.ColText,
+                                         new Vector2(0, 122), new Vector2(460, 32));
+        _lblMissions    = UIHelper.Label(t, "Missions completed: 0", 21, UIHelper.ColText,
+                                         new Vector2(0, 88), new Vector2(460, 32));
+        _lblRoundBonus  = UIHelper.Label(t, "Round bonus:  +25 g",   20, UIHelper.ColSuccess,
+                                         new Vector2(0, 54), new Vector2(460, 30));
+        _lblNoFailBonus = UIHelper.Label(t, "No-fails bonus:  +25 g", 20, UIHelper.ColSuccess,
+                                         new Vector2(0, 22), new Vector2(460, 30));
+        _lblGold        = UIHelper.Label(t, "Gold earned: 0",        21, UIHelper.ColWarn,
+                                         new Vector2(0, -16), new Vector2(460, 32));
+        _lblScore       = UIHelper.Label(t, "Score: 0",              28, UIHelper.ColText,
+                                         new Vector2(0, -58), new Vector2(460, 38),
+                                         TextAnchor.MiddleCenter, FontStyle.Bold);
+        _lblHighScore   = UIHelper.Label(t, "Current Highscore: 0",  19, UIHelper.ColSubtext,
+                                         new Vector2(0, -100), new Vector2(460, 28));
 
-        // Primary action button (Next Round / Play Again)
-        _btnPrimary = UIHelper.Btn(t, "Next Round", new Vector2(-80, -140),
+        // Primary action button (Upgrade Agents / Play Again)
+        _btnPrimary = UIHelper.Btn(t, "Upgrade Agents", new Vector2(-80, -164),
                                    new Vector2(210, 54), UIHelper.AccentBlue, 22);
         _btnPrimaryLabel = _btnPrimary.GetComponentInChildren<Text>();
         _btnPrimary.onClick.AddListener(OnPrimaryClicked);
 
         // Quit button
-        var btnQuit = UIHelper.Btn(t, "Quit", new Vector2(110, -140),
+        var btnQuit = UIHelper.Btn(t, "Quit", new Vector2(110, -164),
                                    new Vector2(130, 54), UIHelper.ColDisabled, 20);
         btnQuit.onClick.AddListener(() => OnQuit?.Invoke());
     }
@@ -64,12 +70,22 @@ public class RoundOverPanel : MonoBehaviour
         _lblHeader.text  = wasFailure ? "GAME OVER" : "ROUND COMPLETE";
         _lblHeader.color = wasFailure ? UIHelper.ColFail : UIHelper.ColSuccess;
 
-        _btnPrimaryLabel.text = wasFailure ? "Play Again" : "Next Round";
+        _btnPrimaryLabel.text = wasFailure ? "Play Again" : "Upgrade Agents";
 
         _lblRound.text    = $"Round reached:  {round}";
         _lblMissions.text = $"Missions completed:  {missions}";
-        _lblGold.text     = $"Gold (round/total):  {roundGold} / {totalGold}";
-        _lblScore.text    = $"Score (round/total):  {roundScore} / {totalScore}";
+        _lblGold.text      = $"Gold (round/total):  {roundGold} / {totalGold}";
+        _lblScore.text     = $"Score (round/total):  {roundScore} / {totalScore}";
+        _lblHighScore.text = $"Current Highscore:  {GameManager.Instance.HighScore}";
+
+        // Bonus breakdown — only on a survived round.
+        var gm = GameManager.Instance;
+        int noFail = gm.Failures == 0 ? gm.Config.noFailBonus : 0;
+        _lblRoundBonus.text   = $"Round bonus:  +{gm.Config.roundCompletionBonus} g";
+        _lblNoFailBonus.text  = $"No-fails bonus:  +{noFail} g";
+        _lblNoFailBonus.color = noFail > 0 ? UIHelper.ColSuccess : UIHelper.ColSubtext;
+        _lblRoundBonus.gameObject.SetActive(!wasFailure);
+        _lblNoFailBonus.gameObject.SetActive(!wasFailure);
 
         _root.SetActive(true);
         _root.transform.SetAsLastSibling();
@@ -83,6 +99,6 @@ public class RoundOverPanel : MonoBehaviour
         if (GameManager.Instance.RoundWasFailure)
             OnRestart?.Invoke();
         else
-            OnNextRound?.Invoke();
+            OnUpgrade?.Invoke();
     }
 }

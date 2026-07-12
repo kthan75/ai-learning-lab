@@ -40,6 +40,14 @@ public struct SkillSet
         engineering, diplomacy, navigation, streetSmarts, resilience
     };
 
+    /// <summary>Returns a copy with one axis (0=ENG … 4=RES) changed by 'amount' (clamped 0..10).</summary>
+    public SkillSet WithIncremented(int axis, float amount)
+    {
+        var v = ToArray();
+        v[axis] = Mathf.Clamp(v[axis] + amount, 0f, 10f);
+        return new SkillSet(v[0], v[1], v[2], v[3], v[4]);
+    }
+
     public static readonly string[] SkillNames =
     {
         "Engineering", "Diplomacy", "Navigation", "Street Smarts", "Resilience"
