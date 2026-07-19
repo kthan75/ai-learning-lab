@@ -9,6 +9,7 @@
     "missionBusyDuration": 7.0,
     "baseGoldReward": 10,
     "roundCompletionBonus": 25,
+    "noFailBonus": 25,
     "streakBonusThreshold": 5,
     "streakBonusGold": 5,
     "skillScalePerRound": 1.100000023841858,

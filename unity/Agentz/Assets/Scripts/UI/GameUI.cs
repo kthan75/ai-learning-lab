@@ -23,6 +23,7 @@ public class GameUI : MonoBehaviour
     private UpgradePanel     _upgrade;
     private IncapacitationManager _incap;
     private IncapacitationPopup   _incapPopup;
+    private IntroScreens          _intro;
 
     private SkillSet[]       _baseSkills; // snapshot for resetting upgrades on a new run
 
@@ -30,6 +31,7 @@ public class GameUI : MonoBehaviour
     private bool             _popupOpen;
     private bool             _resultOpen;
     private bool             _incapOpen;
+    private bool             _introOpen;
     private bool             _roundEndPending;
 
     // ── Layout constants ─────────────────────────────────────────────────────
@@ -49,6 +51,21 @@ public class GameUI : MonoBehaviour
         BuildMissionBoard();
         BuildSubPanels();
         WireEvents();
+        ShowIntro();
+    }
+
+    // ── Intro screens (once per launch, before round 1) ──────────────────────
+    private void ShowIntro()
+    {
+        var introGo = new GameObject("IntroScreens", typeof(RectTransform));
+        introGo.transform.SetParent(_canvasRoot, false);
+        _intro = introGo.AddComponent<IntroScreens>();
+        _intro.Build(_canvasRoot);
+        _intro.OnComplete += () => { _introOpen = false; RefreshPause(); };
+
+        _introOpen = true;      // freeze the game until the intro is dismissed
+        RefreshPause();
+        _intro.Show();
     }
 
     // ── Canvas + EventSystem ─────────────────────────────────────────────────
@@ -259,7 +276,7 @@ public class GameUI : MonoBehaviour
 
     private void RefreshPause()
     {
-        MissionSpawner.Instance.PauseMissions = _popupOpen || _resultOpen || _incapOpen;
+        MissionSpawner.Instance.PauseMissions = _popupOpen || _resultOpen || _incapOpen || _introOpen;
     }
 
     private void OnMissionCardClicked(Mission m)
