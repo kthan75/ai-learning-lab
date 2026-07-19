@@ -86,6 +86,9 @@ public class MissionSlotUI : MonoBehaviour
             _skillBadgeRoots[i] = badgeGo;
         }
 
+        // Thin orange frame around the box
+        UIHelper.AddBorder(root.transform, UIHelper.AccentOrange, 2f);
+
         ShowEmpty();
     }
 

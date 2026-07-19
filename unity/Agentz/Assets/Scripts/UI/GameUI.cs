@@ -109,9 +109,11 @@ public class GameUI : MonoBehaviour
     {
         _slots = new MissionSlotUI[4];
 
-        // Positions: 2 columns, 2 rows, centered vertically between HUD and roster
+        // Positions: 2 columns, 2 rows, centred in the frame's display area (measured
+        // centre ~+55 in canvas units — more headroom below than above at +5).
+        const float boardY = 55f;
         float[] xs = { -(CardW / 2f + CardGapX / 2f), (CardW / 2f + CardGapX / 2f) };
-        float[] ys = { CardH / 2f + CardGapY / 2f + 5f, -(CardH / 2f + CardGapY / 2f) + 5f };
+        float[] ys = { CardH / 2f + CardGapY / 2f + boardY, -(CardH / 2f + CardGapY / 2f) + boardY };
 
         for (int i = 0; i < 4; i++)
         {
