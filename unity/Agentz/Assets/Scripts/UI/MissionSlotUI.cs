@@ -79,8 +79,23 @@ public class MissionSlotUI : MonoBehaviour
             var badgeGo = UIHelper.Panel(at, $"SkillBadge{i}",
                                          UIHelper.AccentBlue,
                                          new Vector2(xOff, 8), new Vector2(badgeW, badgeH));
+
+            // Skill icon (left) + abbreviation (right) — keep the text
+            var ic = ArtLoader.Load($"skill_{SkillSet.SkillAbbreviations[i].ToLowerInvariant()}.png");
+            float textX = 0f;
+            if (ic != null)
+            {
+                var icGo = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+                icGo.transform.SetParent(badgeGo.transform, false);
+                UIHelper.SetRect(icGo, new Vector2(-badgeW / 2f + 13f, 0), new Vector2(18, 18));
+                var iimg = icGo.GetComponent<Image>();
+                iimg.sprite = ic;
+                iimg.preserveAspect = true;
+                iimg.raycastTarget = false;
+                textX = 9f; // shift the text right to make room for the icon
+            }
             UIHelper.Label(badgeGo.transform, SkillSet.SkillAbbreviations[i], 13, Color.white,
-                           Vector2.zero, new Vector2(badgeW, badgeH),
+                           new Vector2(textX, 0), new Vector2(badgeW - 22, badgeH),
                            TextAnchor.MiddleCenter, FontStyle.Bold);
             badgeGo.SetActive(false);
             _skillBadgeRoots[i] = badgeGo;

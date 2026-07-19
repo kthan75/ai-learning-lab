@@ -12,9 +12,13 @@ public class ResultPopup : MonoBehaviour
     public event Action OnDismissed;
 
     private Text        _lblOutcome, _lblMission, _lblMatch, _lblRoll, _lblAgents;
-    private Image       _bg;
+    private Image       _bg, _stampL, _stampR;
     private GameObject  _root;
     private SpiderChart _spider;
+
+    // Text colors matched to the stamp icons.
+    private static readonly Color StampGreen = new Color(0.71f, 0.92f, 0.38f);
+    private static readonly Color StampRed   = new Color(0.95f, 0.31f, 0.31f);
 
     private readonly Queue<ResultData> _queue = new Queue<ResultData>();
     private bool _showing;
@@ -45,8 +49,12 @@ public class ResultPopup : MonoBehaviour
         var t = _root.transform;
 
         _lblOutcome = UIHelper.Label(t, "SUCCESS", 38, UIHelper.ColSuccess,
-                                     new Vector2(0, 186), new Vector2(480, 54),
+                                     new Vector2(0, 186), new Vector2(360, 54),
                                      TextAnchor.MiddleCenter, FontStyle.Bold);
+
+        // Outcome stamp badges flanking the word
+        _stampL = MakeStamp(t, -150f);
+        _stampR = MakeStamp(t,  150f);
 
         _lblMission = UIHelper.Label(t, "Mission Title", 18, UIHelper.ColSubtext,
                                      new Vector2(0, 146), new Vector2(480, 26),
@@ -74,6 +82,17 @@ public class ResultPopup : MonoBehaviour
         var btnOK = UIHelper.Btn(t, "OK", new Vector2(0, -192),
                                  new Vector2(180, 44), UIHelper.AccentBlue, 20);
         btnOK.onClick.AddListener(Dismiss);
+    }
+
+    private static Image MakeStamp(Transform parent, float x)
+    {
+        var go = new GameObject("Stamp", typeof(RectTransform), typeof(Image));
+        go.transform.SetParent(parent, false);
+        UIHelper.SetRect(go, new Vector2(x, 186), new Vector2(56, 56));
+        var img = go.GetComponent<Image>();
+        img.raycastTarget  = false;
+        img.preserveAspect = true;
+        return img;
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
@@ -111,8 +130,13 @@ public class ResultPopup : MonoBehaviour
         int pct  = Mathf.RoundToInt(d.OverlapPct * 100f);
         int need = 100 - pct;   // must roll strictly greater than this
 
-        _lblOutcome.text  = d.Success ? "✓  SUCCESS" : "✗  FAILED";
-        _lblOutcome.color = d.Success ? UIHelper.ColSuccess : UIHelper.ColFail;
+        _lblOutcome.text  = d.Success ? "SUCCESS" : "FAILED";
+        _lblOutcome.color = d.Success ? StampGreen : StampRed;
+
+        var stampSprite = ArtLoader.Load(d.Success ? "stamp_success.png" : "stamp_failure.png");
+        Color sc = stampSprite != null ? Color.white : new Color(0f, 0f, 0f, 0f);
+        _stampL.sprite = _stampR.sprite = stampSprite;
+        _stampL.color  = _stampR.color  = sc;
         _bg.color         = d.Success ? new Color(0.06f, 0.14f, 0.08f, 0.97f)
                                       : new Color(0.16f, 0.06f, 0.06f, 0.97f);
 
