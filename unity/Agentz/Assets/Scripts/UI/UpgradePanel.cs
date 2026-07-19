@@ -66,8 +66,19 @@ public class UpgradePanel : MonoBehaviour
                 float y = rowYs[j];
                 int ai = i, aj = j;
 
+                var skillIcon = ArtLoader.Load($"skill_{SkillSet.SkillAbbreviations[j].ToLowerInvariant()}.png");
+                if (skillIcon != null)
+                {
+                    var iconGo = new GameObject("SkillIcon", typeof(RectTransform), typeof(Image));
+                    iconGo.transform.SetParent(ct, false);
+                    UIHelper.SetRect(iconGo, new Vector2(-228, y), new Vector2(24, 24));
+                    var iimg = iconGo.GetComponent<Image>();
+                    iimg.sprite = skillIcon;
+                    iimg.preserveAspect = true;
+                    iimg.raycastTarget = false;
+                }
                 UIHelper.Label(ct, SkillSet.SkillAbbreviations[j], 15, UIHelper.ColSubtext,
-                               new Vector2(-205, y), new Vector2(60, 24), TextAnchor.MiddleLeft);
+                               new Vector2(-185, y), new Vector2(60, 24), TextAnchor.MiddleLeft);
                 _lblValue[i, j] = UIHelper.Label(ct, "Lv 0", 15, Color.white,
                                new Vector2(-125, y), new Vector2(90, 24), TextAnchor.MiddleLeft);
                 _lblCost[i, j] = UIHelper.Label(ct, "0 g", 15, UIHelper.ColWarn,

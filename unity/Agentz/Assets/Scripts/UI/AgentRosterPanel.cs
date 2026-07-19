@@ -64,7 +64,7 @@ public class AgentRosterPanel : MonoBehaviour
 
             // Deployment status — bottom
             _statusLabels[i] = UIHelper.Label(ct, "Available", 11, UIHelper.ColSuccess,
-                                              new Vector2(10, -53), new Vector2(cardW - 18, 15),
+                                              new Vector2(10, -54), new Vector2(cardW - 18, 15),
                                               TextAnchor.MiddleCenter);
         }
 
