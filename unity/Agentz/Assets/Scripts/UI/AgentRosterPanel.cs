@@ -25,42 +25,46 @@ public class AgentRosterPanel : MonoBehaviour
         _portraits    = new Image[agents.Length];
         _charts       = new SpiderChart[agents.Length];
 
-        _bgRoot = UIHelper.PanelStretch(canvasRoot, "AgentRoster", UIHelper.BgCard);
-        UIHelper.AnchorBottomStretch(_bgRoot.GetComponent<RectTransform>(), height: 190);
+        // Transparent strip matched to the frame's slot interior (flat dark area, measured
+        // from dispatch_bg: canvas y -365..-480).
+        _bgRoot = UIHelper.PanelStretch(canvasRoot, "AgentRoster", new Color(0f, 0f, 0f, 0f));
+        UIHelper.AnchorBottomStretch(_bgRoot.GetComponent<RectTransform>(), height: 128, offsetY: 48);
 
-        UIHelper.Label(_bgRoot.transform, "DEPLOYED\nAGENTS", 15, UIHelper.ColText,
-                       new Vector2(-845, 0), new Vector2(120, 160),
-                       TextAnchor.MiddleCenter, FontStyle.Bold);
-
-        float cardW  = 235f;
-        float cardH  = 168f;
-        float gap    = 10f;
-        float totalW = agents.Length * cardW + (agents.Length - 1) * gap;
-        float startX = -totalW / 2f + cardW / 2f;
+        // Anchor each card to its slot as a FRACTION of the screen width (measured from
+        // dispatch_bg). Screen-fraction anchoring tracks the stretched background at any
+        // window resolution/aspect — absolute canvas positions drift (worse toward the edges).
+        float[] slotFrac = { 0.105f, 0.260f, 0.416f, 0.573f, 0.728f, 0.884f };
+        float cardW = 258f, cardH = 126f;
 
         for (int i = 0; i < agents.Length; i++)
         {
-            float x = startX + i * (cardW + gap);
-
             var card = UIHelper.Panel(_bgRoot.transform, "Agent_" + i,
-                                      UIHelper.BgCard, new Vector2(x, 0), new Vector2(cardW, cardH));
+                                      new Color(0f, 0f, 0f, 0f), Vector2.zero, new Vector2(cardW, cardH));
+            var rt = card.GetComponent<RectTransform>();
+            float fx = slotFrac[Mathf.Min(i, slotFrac.Length - 1)];
+            rt.anchorMin = new Vector2(fx, 0.5f);
+            rt.anchorMax = new Vector2(fx, 0.5f);
+            rt.pivot     = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = Vector2.zero;
+            rt.sizeDelta = new Vector2(cardW, cardH);
             _cardBgs[i] = card.GetComponent<Image>();
             var ct = card.transform;
 
-            // Name — top
-            _nameLabels[i] = UIHelper.Label(ct, agents[i].agentName, 13, UIHelper.ColText,
-                                            new Vector2(0, 68), new Vector2(cardW - 12, 22),
+            // Name — top (inside the slot box)
+            _nameLabels[i] = UIHelper.Label(ct, agents[i].agentName, 12, UIHelper.ColText,
+                                            new Vector2(10, 56), new Vector2(cardW - 18, 18),
                                             TextAnchor.MiddleCenter, FontStyle.Bold);
 
-            // Portrait (left) + mini chart (right)
+            // Portrait (left) + mini chart (right). Shifted right of geometric centre for
+            // visual balance (the solid portrait carries more weight than the sparse chart).
             _portraits[i] = UIHelper.Portrait(ct, agents[i].portrait,
-                                              new Vector2(-56, -4), new Vector2(88, 88));
-            _charts[i] = SpiderChart.Create(ct, new Vector2(48, -4), 92f,
+                                              new Vector2(-54, 0), new Vector2(88, 88));
+            _charts[i] = SpiderChart.Create(ct, new Vector2(60, -4), 84f,
                                             ChartLabelMode.NamesAndValues, 9);
 
             // Deployment status — bottom
             _statusLabels[i] = UIHelper.Label(ct, "Available", 11, UIHelper.ColSuccess,
-                                              new Vector2(0, -70), new Vector2(cardW - 12, 18),
+                                              new Vector2(10, -53), new Vector2(cardW - 18, 15),
                                               TextAnchor.MiddleCenter);
         }
 
@@ -80,7 +84,8 @@ public class AgentRosterPanel : MonoBehaviour
         {
             bool avail = _agents[i].isAvailable;
 
-            _cardBgs[i].color    = avail ? UIHelper.BgCard : new Color(0.10f, 0.10f, 0.14f);
+            // Transparent when available (frame slot shows); dark overlay when deployed/out.
+            _cardBgs[i].color    = avail ? new Color(0f, 0f, 0f, 0f) : new Color(0f, 0f, 0f, 0.5f);
             _nameLabels[i].color = avail ? UIHelper.ColText : UIHelper.ColSubtext;
 
             UIHelper.SetPortrait(_portraits[i], _agents[i].portrait, tinted: !avail);
