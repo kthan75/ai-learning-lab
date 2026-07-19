@@ -11,10 +11,11 @@ public class HUDPanel : MonoBehaviour
 
     public void Build(Transform canvasRoot, GameConfig config)
     {
-        // Background strip anchored to top
-        var bg = UIHelper.PanelStretch(canvasRoot, "HUD", UIHelper.BgCard);
+        // Transparent strip over the frame's top bar (top ~13% of the screen); the dispatch
+        // frame provides the visible bar, so the HUD text sits directly on it.
+        var bg = UIHelper.PanelStretch(canvasRoot, "HUD", new Color(0f, 0f, 0f, 0f));
         var bgRt = bg.GetComponent<RectTransform>();
-        UIHelper.AnchorTopStretch(bgRt, height: 70);
+        UIHelper.AnchorTopStretch(bgRt, height: 140);
 
         var t = bg.transform;
         int fs = 22;
@@ -25,7 +26,7 @@ public class HUDPanel : MonoBehaviour
                                       new Vector2(0, 0),    new Vector2(160, 60),
                                       TextAnchor.MiddleCenter, FontStyle.Bold);
         _lblFailures = UIHelper.Label(t, "Fails: 0/4",        fs, UIHelper.ColFail,
-                                      new Vector2(300, 0),  new Vector2(180, 60));
+                                      new Vector2(-590, 0), new Vector2(180, 60));
         // Gold icon (if available) + value; drop the "Gold" word since the icon conveys it
         var goldIcon = ArtLoader.Load("gold.png");
         if (goldIcon != null)
