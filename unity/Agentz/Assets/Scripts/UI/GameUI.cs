@@ -93,8 +93,15 @@ public class GameUI : MonoBehaviour
 
         _canvasRoot = canvasGo.transform;
 
-        // Dark background panel
-        UIHelper.PanelStretch(_canvasRoot, "Background", UIHelper.BgDark);
+        // Background — dispatch frame art if available, else a flat dark panel
+        var bg = UIHelper.PanelStretch(_canvasRoot, "Background", UIHelper.BgDark);
+        var bgSprite = ArtLoader.Load("dispatch_bg.png");
+        if (bgSprite != null)
+        {
+            var bgImg = bg.GetComponent<Image>();
+            bgImg.sprite = bgSprite;
+            bgImg.color  = Color.white;
+        }
     }
 
     // ── Mission board (2×2 grid) ─────────────────────────────────────────────

@@ -26,8 +26,20 @@ public class HUDPanel : MonoBehaviour
                                       TextAnchor.MiddleCenter, FontStyle.Bold);
         _lblFailures = UIHelper.Label(t, "Fails: 0/4",        fs, UIHelper.ColFail,
                                       new Vector2(300, 0),  new Vector2(180, 60));
-        _lblGold     = UIHelper.Label(t, "Gold (R/T): 0/0",  fs, UIHelper.ColWarn,
-                                      new Vector2(520, 0),  new Vector2(240, 60));
+        // Gold icon (if available) + value; drop the "Gold" word since the icon conveys it
+        var goldIcon = ArtLoader.Load("gold.png");
+        if (goldIcon != null)
+        {
+            var iconGo = new GameObject("GoldIcon", typeof(RectTransform), typeof(Image));
+            iconGo.transform.SetParent(t, false);
+            UIHelper.SetRect(iconGo, new Vector2(448, 0), new Vector2(32, 32));
+            var img = iconGo.GetComponent<Image>();
+            img.sprite = goldIcon;
+            img.preserveAspect = true;
+            img.raycastTarget = false;
+        }
+        _lblGold     = UIHelper.Label(t, "R/T: 0/0",         fs, UIHelper.ColWarn,
+                                      new Vector2(530, 0),  new Vector2(230, 60));
         _lblScore    = UIHelper.Label(t, "Score (R/T): 0/0", fs, UIHelper.ColText,
                                       new Vector2(760, 0),  new Vector2(260, 60));
 
@@ -47,7 +59,7 @@ public class HUDPanel : MonoBehaviour
                           : UIHelper.ColText;
 
         _lblFailures.text = $"Fails: {failures}/4";
-        _lblGold.text     = $"Gold (R/T): {roundGold}/{totalGold}";
+        _lblGold.text     = $"R/T: {roundGold}/{totalGold}";
         _lblScore.text    = $"Score (R/T): {roundScore}/{totalScore}";
         _lblRound.text    = $"Round {round}";
     }
