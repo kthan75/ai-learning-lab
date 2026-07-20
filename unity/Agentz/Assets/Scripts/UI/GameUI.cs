@@ -241,7 +241,8 @@ public class GameUI : MonoBehaviour
     {
         foreach (var slot in _slots)
         {
-            if (!_missionToSlot.ContainsValue(slot))
+            // Skip slots still showing a result flash (HasMission) as well as mapped ones.
+            if (!slot.HasMission && !_missionToSlot.ContainsValue(slot))
             {
                 _missionToSlot[m] = slot;
                 slot.SetMission(m);
@@ -252,11 +253,14 @@ public class GameUI : MonoBehaviour
 
     private void OnMissionExpired(Mission m)
     {
-        if (_missionToSlot.TryGetValue(m, out var slot))
-        {
+        if (!_missionToSlot.TryGetValue(m, out var slot)) return;
+        _missionToSlot.Remove(m);
+
+        // A real timeout has already flipped the mission to Resolved(failure): leave the
+        // slot to flash its FAILED state and self-clear — same as a skill failure, but with
+        // no result popup. Round-end draining removes still-Waiting missions silently.
+        if (m.State != Mission.MissionState.Resolved)
             slot.Clear();
-            _missionToSlot.Remove(m);
-        }
     }
 
     private void OnMissionResolved(Mission m, bool success, float overlap, int roll)

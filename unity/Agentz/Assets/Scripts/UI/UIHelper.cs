@@ -155,15 +155,20 @@ public static class UIHelper
     }
 
     /// <summary>Adds a thin border (4 edge strips) around a panel. Non-interactive.</summary>
-    public static void AddBorder(Transform panel, Color color, float thickness = 2f)
+    /// <summary>Draws a 1-thickness frame from 4 edge strips. Returns the strip Images so
+    /// callers can recolor the border later (e.g. to track mission status).</summary>
+    public static Image[] AddBorder(Transform panel, Color color, float thickness = 2f)
     {
-        Edge(panel, color, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, -thickness), Vector2.zero);      // top
-        Edge(panel, color, new Vector2(0, 0), new Vector2(1, 0), Vector2.zero, new Vector2(0, thickness));       // bottom
-        Edge(panel, color, new Vector2(0, 0), new Vector2(0, 1), Vector2.zero, new Vector2(thickness, 0));       // left
-        Edge(panel, color, new Vector2(1, 0), new Vector2(1, 1), new Vector2(-thickness, 0), Vector2.zero);      // right
+        return new[]
+        {
+            Edge(panel, color, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, -thickness), Vector2.zero),  // top
+            Edge(panel, color, new Vector2(0, 0), new Vector2(1, 0), Vector2.zero, new Vector2(0, thickness)),   // bottom
+            Edge(panel, color, new Vector2(0, 0), new Vector2(0, 1), Vector2.zero, new Vector2(thickness, 0)),   // left
+            Edge(panel, color, new Vector2(1, 0), new Vector2(1, 1), new Vector2(-thickness, 0), Vector2.zero),  // right
+        };
     }
 
-    private static void Edge(Transform parent, Color color, Vector2 aMin, Vector2 aMax, Vector2 oMin, Vector2 oMax)
+    private static Image Edge(Transform parent, Color color, Vector2 aMin, Vector2 aMax, Vector2 oMin, Vector2 oMax)
     {
         var go = new GameObject("Border", typeof(RectTransform), typeof(Image));
         go.transform.SetParent(parent, false);
@@ -173,6 +178,7 @@ public static class UIHelper
         var img = go.GetComponent<Image>();
         img.color = color;
         img.raycastTarget = false;
+        return img;
     }
 
     // ── RectTransform helpers ────────────────────────────────────────────────

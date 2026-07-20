@@ -14,6 +14,7 @@ public class MissionSlotUI : MonoBehaviour
     private Button  _btn;
     private Text    _lblTitle, _lblStatus, _lblTimer;
     private Image   _timerFill, _background;
+    private Image[] _border;
     private GameObject _emptyOverlay, _activeOverlay;
 
     // 5 fixed-position skill badges — only top-2 shown at a time
@@ -101,13 +102,17 @@ public class MissionSlotUI : MonoBehaviour
             _skillBadgeRoots[i] = badgeGo;
         }
 
-        // Thin orange frame around the box
-        UIHelper.AddBorder(root.transform, UIHelper.AccentOrange, 2f);
+        // Thin frame around the box — recolored to track the mission's status (see SetAccent).
+        _border = UIHelper.AddBorder(root.transform, UIHelper.AccentOrange, 2f);
 
         ShowEmpty();
     }
 
     // ── Public API ───────────────────────────────────────────────────────────
+    /// <summary>True while the slot holds a mission — including a resolved one still
+    /// flashing its result — so the board won't reuse it until it self-clears.</summary>
+    public bool HasMission => _mission != null;
+
     public void SetMission(Mission mission)
     {
         _mission = mission;
@@ -163,9 +168,9 @@ public class MissionSlotUI : MonoBehaviour
             case Mission.MissionState.Waiting:
                 float frac = _mission.TimeFraction;
                 _timerFill.fillAmount = frac;
-                _timerFill.color      = frac > 0.5f ? UIHelper.AccentBlue
-                                      : frac > 0.25f ? UIHelper.ColWarn
-                                      : UIHelper.ColFail;
+                // Two states only: blue while there's time, red once it runs short.
+                Color waitColor = frac > 0.25f ? UIHelper.AccentBlue : UIHelper.ColFail;
+                SetAccent(waitColor);
                 int secs = Mathf.CeilToInt(_mission.TimeRemaining);
                 _lblTimer.text   = $"{secs}s";
                 _lblStatus.text  = "[ Click to Assign ]";
@@ -174,16 +179,19 @@ public class MissionSlotUI : MonoBehaviour
                 break;
 
             case Mission.MissionState.Busy:
-                _timerFill.fillAmount = 0f;
+                // Assigned / in progress — orange border + full bar for an unmistakable cue.
+                _timerFill.fillAmount = 1f;
+                SetAccent(UIHelper.AccentOrange);
                 _lblTimer.text   = "...";
                 _lblStatus.text  = "In Progress";
-                _lblStatus.color = UIHelper.ColWarn;
+                _lblStatus.color = UIHelper.AccentOrange;
                 _background.color = new Color(0.12f, 0.10f, 0.05f);
                 break;
 
             case Mission.MissionState.Resolved:
                 _timerFill.fillAmount = 1f;
                 bool ok = _mission.WasSuccess;
+                SetAccent(ok ? UIHelper.ColSuccess : UIHelper.ColFail);
                 _lblStatus.text  = ok ? "✓  SUCCESS" : "✗  FAILED";
                 _lblStatus.color = ok ? UIHelper.ColSuccess : UIHelper.ColFail;
                 _background.color = ok ? new Color(0.05f, 0.14f, 0.07f)
@@ -199,5 +207,16 @@ public class MissionSlotUI : MonoBehaviour
         _emptyOverlay.SetActive(true);
         _activeOverlay.SetActive(false);
         _background.color = new Color(0.07f, 0.07f, 0.16f);
+        SetAccent(UIHelper.ColDisabled);   // muted frame for an empty slot
+    }
+
+    // Border and timer bar share one accent color so status reads at a glance:
+    // blue = waiting, red = time short / failed, orange = in progress, green = success.
+    private void SetAccent(Color color)
+    {
+        _timerFill.color = color;
+        if (_border != null)
+            for (int i = 0; i < _border.Length; i++)
+                if (_border[i] != null) _border[i].color = color;
     }
 }

@@ -24,6 +24,7 @@ public class AssignmentPopup : MonoBehaviour
     private Image[]          _agentPortraits;
     private Button           _btnAssign;
     private GameObject       _root;
+    private GameObject       _keySkillsRow;
     private SpiderChart      _spider;
 
     // ── Build (called once by GameUI) ─────────────────────────────────────────
@@ -49,12 +50,25 @@ public class AssignmentPopup : MonoBehaviour
         _lblDesc.horizontalOverflow = HorizontalWrapMode.Wrap;
         _lblDesc.verticalOverflow   = VerticalWrapMode.Overflow; // never truncate the description
 
+        // ── Key skills required (caption + icon/abbr per skill, populated per mission) ─
+        _keySkillsRow = new GameObject("KeySkills", typeof(RectTransform));
+        _keySkillsRow.transform.SetParent(t, false);
+        UIHelper.SetRect(_keySkillsRow, new Vector2(0, 360), new Vector2(1000, 30));
+        var hlg = _keySkillsRow.AddComponent<HorizontalLayoutGroup>();
+        hlg.childAlignment        = TextAnchor.MiddleCenter;
+        hlg.spacing               = 8f;
+        hlg.childControlWidth      = true;
+        hlg.childControlHeight     = true;
+        hlg.childForceExpandWidth  = false;
+        hlg.childForceExpandHeight = false;
+
         // ── Divider ───────────────────────────────────────────────────────────
-        UIHelper.Panel(t, "Div", UIHelper.AccentBlue, new Vector2(0, 354), new Vector2(1240, 2));
+        UIHelper.Panel(t, "Div", UIHelper.AccentBlue, new Vector2(0, 338), new Vector2(1240, 2));
 
         // ── Agent cards (2 rows × 3): portrait (left) + mini spider chart (right) ─
+        // Left-aligned to the left edge of the left-column cards (x = -416 - 400/2 = -616).
         UIHelper.Label(t, "Select agents (max 3):", 17, UIHelper.ColSubtext,
-                       new Vector2(-470, 330), new Vector2(340, 24), TextAnchor.MiddleLeft);
+                       new Vector2(-446, 318), new Vector2(340, 24), TextAnchor.MiddleLeft);
 
         _agentBtns      = new Button[6];
         _agentBtnBgs    = new Image[6];
@@ -143,6 +157,7 @@ public class AssignmentPopup : MonoBehaviour
 
         _lblTitle.text = mission.Template.missionTitle;
         _lblDesc.text  = FormatDescription(mission.Template.description);
+        PopulateKeySkills(mission.Template.description);
 
         ApplyOiiVisibility(mission.OpsInfoIncomplete);
 
@@ -171,16 +186,68 @@ public class AssignmentPopup : MonoBehaviour
     }
 
     /// <summary>
-    /// Puts the trailing skill hint (e.g. "[DIP, RES]") on its own line so it always
-    /// reads as a centered second line under the prose description.
+    /// Strips the trailing skill hint (e.g. "[DIP, RES]") from the prose description —
+    /// those skills are shown separately as the "Key skills required" icon row.
     /// </summary>
     private static string FormatDescription(string desc)
     {
         if (string.IsNullOrEmpty(desc)) return desc;
         int b = desc.LastIndexOf('[');
         if (b > 0 && desc.TrimEnd().EndsWith("]"))
-            return desc.Substring(0, b).TrimEnd() + "\n" + desc.Substring(b).Trim();
+            return desc.Substring(0, b).TrimEnd();
         return desc;
+    }
+
+    /// <summary>Parses the abbreviations out of the trailing "[SSM, NAV]" hint.</summary>
+    private static List<string> ExtractKeySkills(string desc)
+    {
+        var list = new List<string>();
+        if (string.IsNullOrEmpty(desc)) return list;
+        int b = desc.LastIndexOf('[');
+        int e = desc.LastIndexOf(']');
+        if (b < 0 || e <= b) return list;
+        foreach (var part in desc.Substring(b + 1, e - b - 1).Split(','))
+        {
+            string s = part.Trim();
+            if (s.Length > 0) list.Add(s);
+        }
+        return list;
+    }
+
+    /// <summary>Rebuilds the "Key skills required:" caption + icon/abbr chips for this mission.</summary>
+    private void PopulateKeySkills(string desc)
+    {
+        for (int i = _keySkillsRow.transform.childCount - 1; i >= 0; i--)
+            Destroy(_keySkillsRow.transform.GetChild(i).gameObject);
+
+        var abbrevs = ExtractKeySkills(desc);
+        _keySkillsRow.SetActive(abbrevs.Count > 0);
+        if (abbrevs.Count == 0) return;
+
+        AddKeySkillLabel("Key skills required:", UIHelper.ColSubtext, FontStyle.Normal);
+        foreach (var ab in abbrevs)
+        {
+            var icon = ArtLoader.Load($"skill_{ab.ToLowerInvariant()}.png");
+            if (icon != null) AddKeySkillIcon(icon);
+            AddKeySkillLabel(ab, UIHelper.ColText, FontStyle.Bold);
+        }
+    }
+
+    private void AddKeySkillLabel(string text, Color color, FontStyle style)
+    {
+        var lbl = UIHelper.Label(_keySkillsRow.transform, text, 17, color,
+                                 Vector2.zero, new Vector2(10, 30), TextAnchor.MiddleLeft, style);
+        lbl.horizontalOverflow = HorizontalWrapMode.Overflow;
+    }
+
+    private void AddKeySkillIcon(Sprite icon)
+    {
+        var go = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+        go.transform.SetParent(_keySkillsRow.transform, false);
+        var img = go.GetComponent<Image>();
+        img.sprite = icon; img.preserveAspect = true; img.raycastTarget = false;
+        var le = go.AddComponent<LayoutElement>();
+        le.preferredWidth = 22f; le.preferredHeight = 22f;
     }
 
     // ── Private ───────────────────────────────────────────────────────────────
