@@ -2,10 +2,10 @@
 
 The milestone roadmap and per-milestone breakdown. This is the working plan; the
 [GDD](GDD.md) holds the design detail and the [Architecture](ARCHITECTURE.md) doc holds the
-code structure. **Last updated: 2026-07-12.**
+code structure. **Last updated: 2026-07-20.**
 
 ## Status snapshot
-**M0–M3 complete. M4 is next.** All completed work is verified in Play mode and at least one
+**M0–M4 complete. M5 is next.** All completed work is verified in Play mode and at least one
 successful player build.
 
 | Milestone | Scope | Status |
@@ -14,8 +14,8 @@ successful player build.
 | **M1** | Core loop — spawn, assign, resolve, multi-round, HUD, round-over screen + next-round/restart | ✅ Done |
 | **M2** | Spider/radar chart visuals + agent portraits (assign popup, result popup, roster) | ✅ Done |
 | **M3** | Random events (OII + incapacitation) + economy (bonuses, high score) & upgrade screen | ✅ Done |
-| **M4** | Intro screens (premise + how-to-play) + visual polish / game feel | ⬜ **Next** |
-| **M5** | Content & balance pass | ⬜ Pending |
+| **M4** | Intro screens (premise + how-to-play) + art integration & status-colored HUD feedback | ✅ Done |
+| **M5** | Content & balance pass | ⬜ **Next** |
 
 ---
 
@@ -47,30 +47,27 @@ restart** flow. Missions data-driven from `StreamingAssets/missions.csv`.
 - **Bug fix:** Game Over now triggers on the failure limit even during the Draining phase.
 - Full mechanics in [GDD §4.5, §4.9, §5](GDD.md); all knobs in `GameConfig` → `config.json`.
 
+### M4 — Intro screens + art integration + HUD feedback ✅
+- **Intro screens** (`IntroScreens.cs`): a full-art **premise** screen → a **how-to-play**
+  screen laid out as a 2×2 bordered grid (instructions · skills legend with icons · a main-HUD
+  screenshot · an assign-agents screenshot). Shown in sequence on **every launch** before round
+  1; each dismissed by **any key / mouse** (New Input System). Open intro pauses missions.
+- **Art integration** via `ArtLoader.cs` (runtime PNG loader from `StreamingAssets/Art/`):
+  dispatch-frame background with the HUD/roster/mission board aligned to its regions; "Agentz"
+  logo; gold icon; 5 skill icons (on mission cards, upgrade rows, and the assign popup's "Key
+  skills required" row); success/failure stamps flanking the result-popup outcome.
+- **Status-colored HUD feedback:** each mission card's border + timer bar share one color —
+  blue (waiting) → red (time short) → orange (in progress) → green/red (success/fail). A
+  timeout now shows the FAILED flash in the box (no popup) instead of vanishing.
+- **Deviations from the original plan:** the how-to-play uses two real in-game screenshots
+  instead of three illustrated panels; the *nice-to-have* mission-category and incap-status
+  icons (Appendix B italics) were not made.
+
 ---
 
 ## Upcoming milestones
 
-### M4 — Intro screens + visual polish ⬜ (next)
-**Intro screens** (see [GDD §7](GDD.md)):
-- A short, funny **premise** screen.
-- A brief **how-to-play** screen (text + images).
-- Shown in sequence on **every launch**, before round 1; each dismissed by **any key / mouse
-  button**.
-
-**Visual polish / game feel:**
-- Wire in the generated art (backgrounds, logo, skill/gold icons, success/failure stamps).
-- General layout polish and feedback (transitions, emphasis) as time allows.
-
-**Art dependency:** images are being generated in parallel — the required-image list (with
-descriptions and sizes) is in [GDD Appendix B](GDD.md). Essentials: dispatch background,
-premise art, 3 how-to-play panels, "Agentz" logo, 5 skill icons, gold icon, success/failure
-stamps.
-
-*Open question to resolve when starting M4:* exact placement of each asset and whether to add
-a "New Highscore!" flourish and/or an at-a-glance OII marker on mission cards.
-
-### M5 — Content & balance ⬜
+### M5 — Content & balance ⬜ (next)
 - Balance pass on difficulty scaling, economy/upgrade costs, and random-event rates.
 - Content expansion (more missions; revisit agent spreads).
 - Decide the fate of the still-unused `baseGoldReward` config field.
@@ -79,6 +76,9 @@ a "New Highscore!" flourish and/or an at-a-glance OII marker on mission cards.
 ---
 
 ## Plan revision history
+- **2026-07-20:** Marked **M4 complete** (intro screens, art integration, status-colored HUD
+  feedback) and promoted **M5** to next. Noted the how-to-play screenshot approach and the
+  skipped nice-to-have icons.
 - **2026-07-12:** Recorded the round-over/next-round flow under **M1** (it was mislabeled M3).
   Repurposed **M3** from "economy & upgrade screen" to **random events + economy/upgrade**
   (the two were kept together). Added the M4 intro-screens scope and the Appendix B image list.

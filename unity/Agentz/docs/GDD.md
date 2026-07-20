@@ -1,8 +1,9 @@
 # Agentz — Game Design Document
 
 **Version:** 1.3 (expanded from v1.2)
-**Status:** M1 + M2 + M3 complete (core loop, skill-matching visuals, random events +
-economy/upgrade screen). M4–M5 pending.
+**Status:** M1–M4 complete (core loop, skill-matching visuals, random events +
+economy/upgrade screen, and the M4 presentation layer — intro screens, integrated art, and
+status-colored HUD feedback). M5 (content & balance) pending.
 **Engine:** Unity 2D · **Platform:** PC (MVP), mobile later · **Team:** Solo (+ AI coding)
 
 > This document is the living design spec. It began as `Agentz_GDD_v1.2.docx` and has
@@ -284,7 +285,9 @@ skills (snapshot taken at boot) and gold to 0.
 - Stylized 2D visuals; static dashboard camera; light, dynamic tone.
 
 **⚙️ Implemented as:** all UI is built **programmatically at runtime** (no prefabs), on a
-ScreenSpace-Overlay Canvas. Visual polish and game-feel are the M4 focus.
+ScreenSpace-Overlay Canvas. **M4** added the presentation layer: a dispatch-frame background
+with the HUD aligned to its regions, integrated icons/logo/stamps (via `ArtLoader`), and
+status-colored mission feedback (see §7).
 
 ---
 
@@ -298,9 +301,10 @@ ScreenSpace-Overlay Canvas. Visual polish and game-feel are the M4 focus.
   combined agents), success % chance, and the dice roll with its result.
 - **Upgrade screen:** opens after each round; click an agent portrait to open their page and
   spend gold to raise skills.
-- **Intro screens *(planned — M4)*:** on every launch, before the first round, two full-screen
-  screens shown in sequence — (1) a short, funny **premise** blurb, (2) a brief **how-to-play**
-  (text + images). Each is dismissed by **any key or mouse button**.
+- **Intro screens *(M4)*:** on every launch, before the first round, two full-screen screens
+  shown in sequence — (1) a full-art **premise** screen, (2) a **how-to-play** grid (instructions,
+  a skill legend with icons, and two in-game screenshots). Each is dismissed by **any key or
+  mouse button**.
 
 **⚙️ Implemented in M1:** dispatch screen, mission cards with skill hints, assignment popup,
 result popups (numeric overlap % + roll), roster cards with a "deployed" label, sequenced
@@ -314,7 +318,11 @@ Agent **portraits** load from `StreamingAssets/Portraits/` (see EDITING_GUIDE).
 event popup); the **upgrade screen** (§5) reached from the Round Complete panel; itemized
 round/no-fails bonuses and a persisted **high score** on the round-over panel; Game Over
 correctly triggers on hitting the failure limit (incl. during Draining).
-**⚠️ Not yet built:** intro screens (premise + how-to-play) + visual polish (M4).
+**⚙️ Added in M4:** the intro sequence (premise + how-to-play, dismiss any key, every launch);
+integrated art on a dispatch-frame background — logo, gold/skill icons, and result stamps; and
+**status-colored mission feedback** — each card's border + timer bar share one color (blue
+waiting → red when short → orange in progress → green/red on resolve), and a timeout flashes
+FAILED in place (no popup) rather than disappearing.
 
 ---
 
@@ -343,8 +351,8 @@ optimization.
 | **M1** | Core loop — spawn, assign, resolve, multi-round, HUD, **round-over screen + next-round/restart** | ✅ Done |
 | **M2** | Spider/radar chart visuals + agent portraits (assign popup, result, roster) | ✅ Done |
 | **M3** | Random events (OII + incapacitation, §4.9) + economy (round/no-fails bonus, high score) & upgrade screen | ✅ Done |
-| **M4** | **Intro screens** (premise + how-to-play) + visual polish / game feel (see Appendix B image list) | ⬜ Next |
-| **M5** | Content & balance pass | ⬜ Pending |
+| **M4** | **Intro screens** (premise + how-to-play) + art integration & status-colored HUD feedback (see Appendix B) | ✅ Done |
+| **M5** | Content & balance pass | ⬜ Next |
 
 > **Plan note (2026-07-12):** the round-over summary + next-round flow, originally listed under
 > M3, was actually delivered in M1 and is recorded there now. M3 was repurposed to add the
@@ -409,17 +417,17 @@ See [EDITING_GUIDE.md](EDITING_GUIDE.md) for where to change each of these.
 ---
 
 ## Appendix B — M4 visual-polish asset list
-Images to generate for M4. Transparent PNG for icons/logo; 2560×1440 for backgrounds
-(covers QHD, scales down cleanly). Essentials first; *italic* = nice-to-have.
+The M4 image set. Loaded at runtime from `StreamingAssets/Art/` by `ArtLoader` (every consumer
+degrades gracefully if a file is absent). Status column reflects what shipped.
 
-| Asset | Description | Size |
-|-------|-------------|------|
-| Dispatch background | Sci-fi ops-center backdrop, dark/muted so UI stays readable | 2560×1440 |
-| Premise screen art | Evocative "chaotic space station" scene for the intro | 2560×1440 |
-| How-to-play panels ×3 | Illustrations: (1) missions appear, (2) pick agents, (3) dice/resolution | ~700×450 each |
-| Game logo | "Agentz" title treatment, transparent | ~1000×400 |
-| Skill icons ×5 | ENG / DIP / NAV / SSM / RES glyphs, transparent | 128×128 each |
-| Gold / credits icon | Currency symbol, transparent | 96×96 |
-| Success / Failure stamps | Stylized ✓ and ✗ for the result popup, transparent | 256×256 each |
-| *Mission-category icons ×~6* | Fire/repair, diplomacy, navigation, security, medical, generic | 128×128 each |
-| *Incap status icons ×3* | Injured / emergency / paperwork | 64×64 each |
+| Asset | Description | Size | Status |
+|-------|-------------|------|--------|
+| Dispatch frame background | Ops-center frame with HUD / roster / mission-board regions the UI aligns to | full-screen | ✅ Done (`dispatch_bg.png`) |
+| Premise screen art | Full-art "chaotic space station" intro screen | full-screen | ✅ Done (`premise_bg.png`) |
+| How-to-play visuals | **Shipped as two in-game screenshots** (main HUD + assign screen) rather than 3 illustrated panels | 800×450 / 670×450 | ✅ Done (`main_howto.png`, `assign_howto.png`) |
+| Game logo | "Agentz" title treatment, transparent | ~1000×400 | ✅ Done (`logo.png`) |
+| Skill icons ×5 | ENG / DIP / NAV / SSM / RES glyphs, transparent | 128×128 | ✅ Done (`skill_*.png`) |
+| Gold / credits icon | Currency symbol, transparent | — | ✅ Done (`gold.png`) |
+| Success / Failure stamps | Stamps flanking the result-popup outcome | 256×256 | ✅ Done (`stamp_success/failure.png`) |
+| *Mission-category icons ×~6* | Fire/repair, diplomacy, navigation, security, medical, generic | 128×128 | ⬜ Not made (nice-to-have) |
+| *Incap status icons ×3* | Injured / emergency / paperwork | 64×64 | ⬜ Not made (nice-to-have) |

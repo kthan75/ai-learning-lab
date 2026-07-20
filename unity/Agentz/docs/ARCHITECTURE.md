@@ -70,6 +70,10 @@ See [EDITING_GUIDE.md](EDITING_GUIDE.md) for the editing workflow and the Editor
 - **`PortraitLoader.cs`** *(M2)* — at boot, fills `AgentData.portrait` from
   `StreamingAssets/Portraits/<name-slug>.png` (decodes to a runtime `Sprite`). Inspector-
   assigned portraits take precedence; missing files are skipped.
+- **`ArtLoader.cs`** *(M4)* — `ArtLoader.Load(fileName)` decodes a PNG from
+  `StreamingAssets/Art/` into a `Sprite`, cached by filename; returns `null` if the file is
+  missing (every caller degrades gracefully, so absent art just doesn't draw). Powers all M4
+  imagery: dispatch frame, logo, gold/skill icons, and result stamps.
 - **`CsvUtil.cs`** — shared quoted-CSV line parser + field-quoting helper, used by both
   loaders and the Editor menu.
 
@@ -117,7 +121,10 @@ See [EDITING_GUIDE.md](EDITING_GUIDE.md) for the editing workflow and the Editor
   modes: names, or names+values. Built via `SpiderChart.Create(...)`.
 - **`AgentRosterPanel.cs`** — bottom roster of agent cards (portrait + mini chart + name +
   deployment status). `SetVisible(false)` hides it while the assign popup is open.
-- **`MissionSlotUI.cs`** — a mission card on the board.
+- **`MissionSlotUI.cs`** — a mission card on the board. Its border and timer bar share one
+  status color (`SetAccent`): blue while waiting → red when time is short → orange in progress →
+  green/red on success/fail. A timeout flashes the FAILED state in place (no popup); the slot
+  reports `HasMission` so the board won't reuse it mid-flash.
 - **`AssignmentPopup.cs`** — mission detail + agent cards (portrait + mini chart) + live
   team-vs-mission summary chart + success % + Assign button.
 - **`ResultPopup.cs`** — resolution result: skill match %, result spider chart (outcome
@@ -129,6 +136,10 @@ See [EDITING_GUIDE.md](EDITING_GUIDE.md) for the editing workflow and the Editor
   failure → **"Play Again"** (`OnRestart`).
 - **`UpgradePanel.cs`** *(M3)* — between-round flat grid of agents; spend gold to raise skills
   (`+`) with an undo (`−`) refunding back to the round-start level. "Next Round" continues.
+- **`IntroScreens.cs`** *(M4)* — the launch sequence: a full-art **premise** screen then a
+  **how-to-play** grid (instructions · skill legend · two in-game screenshots). Advances /
+  dismisses on any key or mouse button; `GameUI.ShowIntro` runs it before round 1 and treats it
+  as a pause source.
 - **`UIHelper.cs`** — shared factory helpers (panels, labels, buttons, **portraits**) for
   building UI elements in code.
 
@@ -166,8 +177,12 @@ Mission.Tick() counts down busy → Mission.Resolve()
 - **M3 (random events + economy/upgrade):** ✅ done. `IncapacitationManager` + `OpsInfoIncomplete`;
   `UpgradePanel` spends `GameManager.TrySpendGold` to raise `AgentData.skills`; round/no-fails
   bonuses + persisted high score. GameUI snapshots base skills to reset upgrades on Play Again.
-- **M4 (intro screens + polish):** two dismiss-any-key screens (premise, how-to-play) at launch
-  before round 1; visual polish per GDD Appendix B. Not started.
+- **M4 (intro screens + art + HUD feedback):** ✅ done. `IntroScreens` shows the premise +
+  how-to-play screens (dismiss any key, every launch; `GameUI.ShowIntro` pauses missions while
+  open). `ArtLoader` decodes PNGs from `StreamingAssets/Art/` into cached sprites, consumed by
+  `GameUI` (dispatch frame), `HUDPanel` (gold icon), `MissionSlotUI` / `UpgradePanel` /
+  `AssignmentPopup` (skill icons), and `ResultPopup` (outcome stamps). `MissionSlotUI` recolors
+  its border + timer bar together to signal status (see UI notes below).
 
 ## Known loose ends
 - `GameConfig.baseGoldReward` is defined but **not read** by any system (missions use their own

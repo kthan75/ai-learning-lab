@@ -6,10 +6,12 @@ Guidance for AI sessions working on this project. Read the docs before making ch
 
 ## What this is
 A real-time dispatch game — assign 1–3 skill-differentiated agents to timed missions, resolve
-via overlap%→D100 roll, survive rounds. **M1, M2, and M3 are complete** — core loop,
-spider-chart visuals + portraits, random events (OII + incapacitation), and the economy /
-upgrade screen (round & no-fails bonuses, persisted high score). Next milestone is **M4:
-intro screens (premise + how-to-play) + visual polish** (GDD Appendix B image list).
+via overlap%→D100 roll, survive rounds. **M1–M4 are complete** — core loop, spider-chart
+visuals + portraits, random events (OII + incapacitation), the economy / upgrade screen
+(round & no-fails bonuses, persisted high score), and the M4 presentation layer: intro screens
+(premise + how-to-play), integrated art (dispatch frame, logo, skill/gold icons, result
+stamps) via `ArtLoader`, and status-colored mission feedback. Next milestone is **M5: content
+& balance pass**.
 
 ## Working with the user
 - **Beginner to Unity.** Any manual Editor work (creating assets, setting Inspector fields,
@@ -69,9 +71,17 @@ intro screens (premise + how-to-play) + visual polish** (GDD Appendix B image li
   `EndRound`; high score persisted in `PlayerPrefs`. GameUI snapshots base skills to reset on
   Play Again.
 
+## M4 (done) — key facts for future changes
+- **Runtime art:** `ArtLoader.Load("<file>.png")` decodes from `StreamingAssets/Art/`, cached,
+  returns null if missing (callers no-op). Add new imagery this way; don't wire prefab sprites.
+- **Intro screens** (`IntroScreens.cs`): premise → how-to-play, dismiss any key/mouse (New Input
+  System), shown every launch via `GameUI.ShowIntro`; open intro is a pause source (`_introOpen`).
+- **Mission-card status color** lives in `MissionSlotUI.SetAccent` (border + timer bar together).
+  Timeouts flash FAILED in place (no popup); `HasMission` keeps a flashing slot from being reused.
+
 ## Where the next milestone plugs in
-- **M4 — intro screens + polish:** two dismiss-any-key screens (premise, how-to-play) at
-  launch before round 1; visual polish per the GDD Appendix B image list. Not started.
+- **M5 — content & balance:** balance difficulty scaling / economy / event rates; expand
+  missions and revisit agent spreads; decide the fate of the unused `baseGoldReward`. Not started.
 
 ## Gotchas
 - Editing a `Default*.cs` file changes *defaults/fallbacks*, not the scene assets already in
